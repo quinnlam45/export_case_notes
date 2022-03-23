@@ -6,10 +6,13 @@ import io
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
+from modules.get_data import get_cases
 
 # Create your views here.
 def index(request):
     try:
+        data_output = get_cases('1 Jan 2019', '23 mar 2022', '89,16,5,30', '')
+        print(data_output)
         # build excel report here
         if request.method == "POST":
             wb = Workbook()
