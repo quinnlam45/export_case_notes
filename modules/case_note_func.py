@@ -23,11 +23,11 @@ def slice_str(string_data, slice_length):
             sliced_str_list.append(notes_str)
             break
     
-    sliced_str_list = add_contd_to_sliced_str_list(sliced_str_list)
+    sliced_str_list = add_contd_to_sliced_str_list_items(sliced_str_list)
 
     return sliced_str_list
 
-def add_contd_to_sliced_str_list(sliced_str_list):
+def add_contd_to_sliced_str_list_items(sliced_str_list):
     # append strings to sliced text
     for x, line in enumerate(sliced_str_list):
         if x == 0:

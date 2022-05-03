@@ -8,7 +8,7 @@ from openpyxl.writer.excel import save_virtual_workbook
 
 import pandas as pd
 
-# reads excel file and returns python data object
+# reads excel file and returns python data object/fake SQL data
 def read_excel_file(filename):
     wb = load_workbook(filename)
     ws = wb.active
