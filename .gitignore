@@ -5,3 +5,5 @@ db.sqlite3
 migrations/
 .vs/
 .vscode/
+
+*.xlsx
