@@ -15,20 +15,19 @@ from modules.case_note_func import transform_case_note_data
 # Create your views here.
 def index(request):
     try:
-        data_output = get_cases('1 Jan 2019', '23 mar 2022', '89,16,5,30', '')
-        print(data_output)
+        #data_output = get_cases('1 Jan 2019', '23 mar 2022', '89,16,5,30', '')
+        #print(data_output)
         # build excel report here
         if request.method == "POST":
-            wb = Workbook()
-            ws = wb.active
-            ws["A1"] = "Test!"
+            df_columns = {'High': [2, 5, 6], 'Medium': [7, 3, 2], 'Standard': [0, 3, 2]}
+            df_index = ['Sandwell', 'Dudley', 'Walsall']
+            df = pd.DataFrame(df_columns, index=df_index).rename_axis(index="Area", columns="Risk")
 
-            # saves workbook in memory as string
-            excel_data = save_virtual_workbook(wb)
+            excel_data = io.BytesIO()
 
-            ws["B1"] = "Second test!"
-            ws["B1"].font = Font(bold="true")
-            excel_data = save_virtual_workbook(wb)
+            with pd.ExcelWriter(excel_data) as writer:
+                df.to_excel(writer, sheet_name='Sheet')
+                df.to_excel(writer, sheet_name='Sheet', startrow=7) 
 
             response = HttpResponse(excel_data, headers={
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 

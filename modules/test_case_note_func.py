@@ -1,7 +1,9 @@
 from asyncore import read
 import unittest
+import datetime
 from case_note_func import *
 from excel_module import read_excel_file
+from fixture_transform_case_note_func import expected_transformed_case_notes
 
 class CaseNoteFuncTest(unittest.TestCase):
 
@@ -27,8 +29,20 @@ class CaseNoteFuncTest(unittest.TestCase):
         self.assertEqual("A test string, ...", sliced_str_list[0])
         self.assertEqual("[cont'd]  to test if ...", sliced_str_list[1])
 
+    def test_return_copied_rows_for_sliced_str(self):
+        current_row = ['TS/TEST', 63108, 1, 2020, datetime.datetime(2020, 6, 23, 0, 0), datetime.time(10, 14), 'One to one support']
+        sliced_str_list = ["First line ...", "[cont'd] second line ...", "... last line"]
+        expected_result = [
+            ['TS/TEST', 63108, 1, 2020, datetime.datetime(2020, 6, 23, 0, 0), datetime.time(10, 14), 'One to one support', "First line ..."],
+            ['TS/TEST', 63108, 1, 2020, datetime.datetime(2020, 6, 23, 0, 0), datetime.time(10, 14), 'One to one support', "[cont'd] second line ..."],
+            ['TS/TEST', 63108, 1, 2020, datetime.datetime(2020, 6, 23, 0, 0), datetime.time(10, 14), 'One to one support', "... last line"]
+        ]
+        transformed_rows = return_copied_rows_for_sliced_str(current_row, sliced_str_list)
+        self.assertEqual(expected_result, transformed_rows)
+    
     def test_transform_case_note_data(self):
-        filename = r"C:\Users\quinn\Documents\Programming\performance_dashboard\performance_dashboard\test_case_notes_v1.xlsx"
+        filename = r"C:\Users\quinn\Documents\Programming\performance_dashboard\performance_dashboard\test_case_notes_transform_data_v1.xlsx"
         fake_SQL_data = read_excel_file(filename)
         transformed_data = transform_case_note_data(fake_SQL_data)
-        self.assertEqual("TS/TEST", transformed_data[1][0])
+        self.assertEqual(expected_transformed_case_notes, transformed_data)
+        self.assertListEqual(expected_transformed_case_notes, transformed_data)

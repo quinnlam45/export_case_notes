@@ -1,3 +1,4 @@
+import io
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo, TableColumn
 from openpyxl.styles import Font, Alignment, Border, Side, NamedStyle, PatternFill, Color
@@ -37,6 +38,13 @@ def df_to_excel(df, sh_name, dest_filename):
         df.to_excel(writer, startrow=row, sheet_name=sh_name)
         writer.save()
 
+def df_to_IO(df):
+    stream = io.BytesIO()
+    with pd.ExcelWriter(stream) as writer:
+        df.to_excel(writer)
+    
+    return stream
+
 def create_case_notes_file(data, clientID):
     sql_data = data
     wb = Workbook()
@@ -56,7 +64,7 @@ def create_case_notes_file(data, clientID):
     for row_no, datarow in enumerate(sql_data, start=1):
         for col_no, value in enumerate(datarow, start=1):
             #print(row)
-            print(value)
+            #print(value)
             ws1.cell(row=start_row+row_no, column=col_no, value=value)
             # update max col width
             if col_no == 1 and len(value) > max_col_width:
