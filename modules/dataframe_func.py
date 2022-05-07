@@ -25,6 +25,12 @@ def transform_data(sql_data):
         
     return dataframe_dict
 
+def filter_df(df, field, filter_value):
+    if field and filter_value:
+        filtered_df = df[df[field] == filter_value]
+        return filtered_df
+    else:
+        return df
 
 # Pivot dataframe using specified rows and cols
 def pivot_df(df, rows, cols, count_value = "CaseID"):

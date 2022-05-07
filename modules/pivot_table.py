@@ -1,22 +1,38 @@
+import pandas as pd
 
+class PivotTable:
 
+    # def _return_df(self):
+    #     return self.df
 
-class Pivot_table:
     #init method
-    def __init__(self, dataframe, name = None):
+    def __init__(self, pivoted_dataframe, name = None):
         self.name = name
-        self.df = dataframe
-
-    #add % cols
-    def add_empty_percent_col(self):
-        for df_col in self.df.columns:
-            self.df[df_col + ' %'] = np.nan
+        self.df = pd.DataFrame(pivoted_dataframe)
+        self.no_of_rows = self.df.ndim + self.df.shape[0]
 
     #calculate %
+    def add_percent_col(self):
+        for df_col in self.df.columns:
+            self.df[df_col + ' %'] = (self.df[df_col]/self.df[df_col].sum()).round(2).map('{:03.2f}'.format).astype(float)    
 
     #row totals
+    def add_totals_col(self):
+        self.df['Total'] = self.df.sum(axis=1)
 
     #col totals
 
     #sort functions
+    def sort_pivot_table(self, sort_on='columns', asc=True):
+        axis = 1
+        if sort_on == 'rows':
+            axis = 0
 
+        self.df.sort_index(axis=axis, ascending=asc, inplace=True)
+
+
+def make_pivot_table(pivoted_df):
+    pivot_table = PivotTable(pivoted_df)
+    pivot_table.add_totals_col()
+    pivot_table.add_percent_col()
+    return pivot_table.df

@@ -8,43 +8,7 @@ from openpyxl.styles import Font
 import pandas as pd
 
 from dataframe_func import *
-from case_note_func import return_slice_length, transform_case_note_data
-from excel_module import read_excel_file
-
-def return_virtual_wb():
-    wb = Workbook()
-    ws = wb.active
-    ws["A1"] = "Test!"
-
-    # saves workbook in memory as string
-    excel_data = save_virtual_workbook(wb)
-
-    ws["B1"] = "Second test!"
-    ws["B1"].font = Font(bold="true")
-    excel_data = save_virtual_workbook(wb)
-
-    return excel_data
-
-def return_temp_wb():
-
-
-    wb = Workbook()
-    ws = wb.active
-    ws["A1"] = "Test!"
-
-    bytes_stream = io.BytesIO()
-    
-    with NamedTemporaryFile() as tmp:
-        tmp.name += ".xlsx"
-        wb.save(tmp.name)
-        tmp.seek(0)
-        stream = tmp.read()
-        print(stream)
-    
-    print(bytes_stream.getvalue())
-
-    return bytes_stream
-#return_temp_wb()
+from pivot_table import PivotTable, make_pivot_table
 
 
 dataframe_columns = ['CaseID', 'Referrer', 'Area', 'Risk']
@@ -60,7 +24,7 @@ df_dummy_pivot = pd.DataFrame(df_columns, index=df_index).rename_axis(index="Are
 
 def return_no_of_df_rows(df):
     no_of_dimensions = df.ndim
-    no_of_indexes = df.shape[0]
+    no_of_indexes = df.shape[0] # dataframe rows
     no_rows_in_df = no_of_dimensions + no_of_indexes
 
     return no_rows_in_df
@@ -70,7 +34,7 @@ def add_empty_percent_col(df):
         df[df_col + ' %'] = np.nan
     return df
 
-def return_list_of_dfs(df, df_rows, df_cols):
+def return_pivoted_dfs(df, df_rows, df_cols):
     dfs_list = []
     
     for df_row in df_rows:
@@ -99,20 +63,26 @@ def build_report(df_list):
         stream = tmp.read()
         buffer.write(stream)
 
-    with open('test.xlsx', 'wb') as ex_file:
-        buffer.seek(0)
-        ex_file.write(buffer.read())
-
     return buffer
+
+def bytes_to_file(stream, filename):
+    with open(filename, 'wb') as ex_file:
+        stream.seek(0)
+        ex_file.write(stream.read())
 
 
 cols = 'Risk'
 rows_to_pivot = ['Area', 'Referrer']
-df_list = return_list_of_dfs(df, rows_to_pivot, cols)
+pivoted_df_list = return_pivoted_dfs(df, rows_to_pivot, cols)
 
-# print(df_list)
+transformed_pivot_dfs = []
 
-# build_report(df_list)
+for pivoted_df in pivoted_df_list:
+    transformed_pivot_df = make_pivot_table(pivoted_df)
+    transformed_pivot_dfs.append(transformed_pivot_df)
 
-df_out = add_empty_percent_col(df_dummy_pivot)
-print(df_out)
+del pivoted_df_list
+
+file_bytes = build_report(transformed_pivot_dfs)
+
+bytes_to_file(file_bytes, 'Test.xlsx')
