@@ -33,10 +33,10 @@ def filter_df(df, field, filter_value):
         return df
 
 # Pivot dataframe using specified rows and cols
-def pivot_df(df, rows, cols, count_value = "CaseID"):
-    df_pivot = pd.pivot_table(df, values=count_value, index=rows, columns=cols, aggfunc=lambda x: x.value_counts().count(), fill_value=0)
+# def pivot_df(df, rows, cols, count_value = "CaseID"):
+#     df_pivot = pd.pivot_table(df, values=count_value, index=rows, columns=cols, aggfunc=lambda x: x.value_counts().count(), fill_value=0)
     
-    return df_pivot
+#     return df_pivot
 
 def add_percent_col(df):
     for column in df:

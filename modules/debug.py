@@ -8,8 +8,7 @@ from openpyxl.writer.excel import save_virtual_workbook, save_workbook, ExcelWri
 from openpyxl.styles import Font
 import pandas as pd
 
-from dataframe_func import *
-from pivot_table import PivotTable, make_pivot_table
+from pivot_table import PivotTable, make_pivot_table, pivot_df
 
 
 dataframe_columns = ['CaseID', 'Referrer', 'Area', 'Risk']
@@ -78,5 +77,7 @@ pivoted_df_list = return_pivoted_dfs(df, rows_to_pivot, cols)
 exp_df_columns = {'High': [0, 2], 'Medium': [1, 0],}
 exp_df_index = ['Dudley', 'Sandwell']
 expected_pivoted_df = pd.DataFrame(exp_df_columns, index=exp_df_index).rename_axis(index="Area", columns="Risk")
-
-print(expected_pivoted_df)
+expected_totals_series = pd.Series([1,2], index=['Dudley', 'Sandwell'])
+cols1 = expected_pivoted_df['High']
+print(expected_totals_series)
+print(cols1)
