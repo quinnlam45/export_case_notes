@@ -81,3 +81,4 @@ expected_totals_series = pd.Series([1,2], index=['Dudley', 'Sandwell'])
 cols1 = expected_pivoted_df['High']
 print(expected_totals_series)
 print(cols1)
+print('test')
