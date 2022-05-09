@@ -1,13 +1,10 @@
 import pandas as pd
 
+from dataframe_func import pivot_df
+
 class PivotTable:
 
-    # def _return_df(self):
-    #     return self.df
-
-    #init method
-    def __init__(self, pivoted_dataframe, name = None):
-        self.name = name
+    def __init__(self, pivoted_dataframe):
         self.df = pd.DataFrame(pivoted_dataframe)
         self.no_of_rows = self.df.ndim + self.df.shape[0]
 

@@ -1,3 +1,4 @@
+from cgi import test
 import io
 from tempfile import NamedTemporaryFile
 
@@ -29,18 +30,13 @@ def return_no_of_df_rows(df):
 
     return no_rows_in_df
 
-def add_empty_percent_col(df):
-    for df_col in df.columns:
-        df[df_col + ' %'] = np.nan
-    return df
-
 def return_pivoted_dfs(df, df_rows, df_cols):
     dfs_list = []
     
     for df_row in df_rows:
         pivoted_df = pivot_df(df, df_row, df_cols)
-
-        dfs_list.append(pivoted_df)
+        transformed_pivot_df = make_pivot_table(pivoted_df)
+        dfs_list.append(transformed_pivot_df)
     
     return dfs_list
 
@@ -52,9 +48,10 @@ def build_report(df_list):
 
     with NamedTemporaryFile(suffix='.xlsx') as tmp:
 
+        # func in excel module?
         with pd.ExcelWriter(tmp) as writer:
             for df in df_list:
-                df.to_excel(writer, startrow=current_row+1, sheet_name='sheet')
+                df.to_excel(writer, startrow=current_row+1, sheet_name='sheet', na_rep = 0)
                 no_rows_in_df = return_no_of_df_rows(df)
                 current_row += no_rows_in_df
             writer.save()
@@ -75,14 +72,11 @@ cols = 'Risk'
 rows_to_pivot = ['Area', 'Referrer']
 pivoted_df_list = return_pivoted_dfs(df, rows_to_pivot, cols)
 
-transformed_pivot_dfs = []
+# file_bytes = build_report(pivoted_df_list)
 
-for pivoted_df in pivoted_df_list:
-    transformed_pivot_df = make_pivot_table(pivoted_df)
-    transformed_pivot_dfs.append(transformed_pivot_df)
+# bytes_to_file(file_bytes, 'Test.xlsx')
+exp_df_columns = {'High': [0, 2], 'Medium': [1, 0],}
+exp_df_index = ['Dudley', 'Sandwell']
+expected_pivoted_df = pd.DataFrame(exp_df_columns, index=exp_df_index).rename_axis(index="Area", columns="Risk")
 
-del pivoted_df_list
-
-file_bytes = build_report(transformed_pivot_dfs)
-
-bytes_to_file(file_bytes, 'Test.xlsx')
+print(expected_pivoted_df)
