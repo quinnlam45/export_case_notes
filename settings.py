@@ -82,7 +82,7 @@ DATABASES = {
         # 'OPTIONS': {
             # 'driver': 'ODBC Driver 17 for SQL Server',
             # 'Trusted_connection': 'yes',
-        # #'PORT': '1433'
+        # #'PORT': ''
         # }
     # },
     'application_default': {
