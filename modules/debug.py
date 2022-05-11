@@ -1,12 +1,15 @@
 from cgi import test
+from fileinput import filename
 import io
 from tempfile import NamedTemporaryFile
+from turtle import mode
 
 from numpy import byte
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.writer.excel import save_virtual_workbook, save_workbook, ExcelWriter
 from openpyxl.styles import Font
 import pandas as pd
+from excel_module import read_excel_file
 
 from pivot_table import PivotTable, make_pivot_table, pivot_df
 
@@ -67,18 +70,38 @@ def bytes_to_file(stream, filename):
         ex_file.write(stream.read())
 
 
-cols = 'Risk'
-rows_to_pivot = ['Area', 'Referrer']
-pivoted_df_list = return_pivoted_dfs(df, rows_to_pivot, cols)
+cols = 'Service risk level'
+rows_to_pivot = ['Service area', 'Referrer', 'Gender', 'Ethnicity']
 
-# file_bytes = build_report(pivoted_df_list)
+risk_category = ['High Risk', 'Medium Risk', 'Standard Risk']
 
-# bytes_to_file(file_bytes, 'Test.xlsx')
-exp_df_columns = {'High': [0, 2], 'Medium': [1, 0],}
-exp_df_index = ['Dudley', 'Sandwell']
-expected_pivoted_df = pd.DataFrame(exp_df_columns, index=exp_df_index).rename_axis(index="Area", columns="Risk")
-expected_totals_series = pd.Series([1,2], index=['Dudley', 'Sandwell'])
-cols1 = expected_pivoted_df['High']
-print(expected_totals_series)
-print(cols1)
-print('test')
+filenames = []
+
+for risk_level in risk_category:
+    file_name = risk_level.replace(' ', '_')    
+    file_name += '.xlsx'
+    filenames.append(file_name)
+
+ex_file = 'test_output.xlsx'
+# wb = Workbook()
+# wb.save(ex_file)
+
+
+with pd.ExcelWriter(ex_file) as writer: #  mode='a', if_sheet_exists='replace'
+    wb = writer.book
+    # print(ws.title)
+
+    for f in filenames:
+        current_row = 0
+        data = read_excel_file(f)
+        df = pd.DataFrame(data[1:], columns=data[0])
+        pivoted_df_list = return_pivoted_dfs(df, rows_to_pivot, cols)
+
+        sh_name = f[:-5]
+
+        for df in pivoted_df_list:
+            df.to_excel(writer, startrow=current_row+1, sheet_name=sh_name, na_rep=0)
+            no_rows_in_df = return_no_of_df_rows(df)
+            current_row += no_rows_in_df
+
+    writer.save()
