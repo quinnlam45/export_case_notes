@@ -109,62 +109,66 @@ def create_case_notes_file(data, clientID):
     excel_data = save_virtual_workbook(wb)
     return excel_data
 
-def reset_formatting(ws, start_row_no, max_row_no, max_col_no):
+def reset_formatting_style(cell):
     ft = Font(bold=False)
     bd_style = Side(border_style=None)
     border_setting = Border(top=bd_style, left=bd_style, right=bd_style, bottom=bd_style)
 
-    row_counter = 0
-    for row in ws.iter_rows(min_row=start_row_no, max_row=start_row_no+max_row_no, min_col=1, max_col=max_col_no):
-        for row_cell in row:
-            row_cell.font = ft
-            row_cell.border = border_setting
-        row_counter += 1
+    cell.font = ft
+    cell.border = border_setting
 
-def add_row_banding(ws, start_row_no, max_row_no, max_col_no):
-    row_counter = 0
-    for row in ws.iter_rows(min_row=start_row_no, max_row=start_row_no+max_row_no, min_col=1, max_col=max_col_no):
-        for row_cell in row:
-            if row_counter % 2:
-                row_cell.style = "20 % - Accent1"
-                row_cell.font = Font(size=11)
-        row_counter += 1
+def add_row_banding_style(cell):    
+    cell.style = "20 % - Accent1"
+    cell.font = Font(size=11)
 
-def set_column_header_style(ws, start_row_no, max_col_no):
-    for row in ws.iter_rows(min_row=start_row_no, max_row=start_row_no, min_col=1, max_col=max_col_no):
-        for row_cell in row:
-            row_cell.style = "Total"
-            row_cell.font = Font(size=11, bold=True)
-            row_cell.alignment = Alignment(wrap_text=True, vertical="top")
+def set_column_header_style(cell):
+    cell.style = "Total"
+    cell.font = Font(size=11, bold=True)
+    cell.alignment = Alignment(wrap_text=True, vertical="top")
 
+def set_row_header_style(cell):
+    cell.alignment = Alignment(horizontal='left', vertical="top")
 
-def find_max_str_length(max_value, str_val):
-    max_str_len = max_value
+def return_max_column_width(cell_value, min_col_width_setting):
+
+    if len(cell_value) > min_col_width_setting:
+        max_width = len(cell_value)
+    else:
+        max_width = min_col_width_setting
     
-    if len(str_val) > max_value:
-        max_str_len = len(str_val)
+    return max_width
 
-    return max_str_len
 
-def set_row_header_style(ws, ws_max_row, ws_max_col, ws_min_row=4):
-    for column in ws.iter_cols(min_row=ws_min_row, max_col=ws_max_col, max_row=ws_max_row):
+def apply_column_width(ws, min_col_width_setting, ws_min_row, ws_max_row, ws_max_col, ws_min_col=1, header_styling=False):
+    max_width = min_col_width_setting
+    for column in ws.iter_cols(min_row=ws_min_row, max_row=ws_max_row, min_col=ws_min_col, max_col=ws_max_col):
         for column_cell in column:
-            column_cell.alignment = Alignment(horizontal='left', vertical="top")
-
-def set_max_column_width(ws, max_col_width_setting, ws_max_row, ws_max_col, ws_min_row=4):
-    #iterate through col cells
-    max_width = max_col_width_setting
-    for column in ws.iter_cols(min_row=ws_min_row, max_col=ws_max_col, max_row=ws_max_row):
-        for column_cell in column:
+            if header_styling == True:
+                set_row_header_style(column_cell)
             if column_cell != None and isinstance(column_cell.value, str):
-                max_width = find_max_str_length(max_width, column_cell.value)
-    
-    # set col width
+                max_width = return_max_column_width(column_cell.value, max_width)
         ws.column_dimensions[column_cell.column_letter].width = max_width
 
-def apply_default_style(ws, start_row_no, max_row_no, max_col_no):
-    reset_formatting(ws, start_row_no, max_row_no, max_col_no)
-    add_row_banding(ws, start_row_no, max_row_no, max_col_no)
-    set_column_header_style(ws, start_row_no, max_col_no)
-    set_row_header_style(ws, max_row_no, max_col_no)
-    set_max_column_width(ws, 80, max_row_no, max_col_no)
+def apply_table_styling(ws, start_row_no, max_row_no, max_col_no, min_col_no=1, first_col_min_width=25, other_col_min_width=10):
+    if ws == None:
+        raise Exception('No worksheet object passed')
+
+    row_counter = 0
+    # iter_rows is 1 based: +1 to min_row parameter
+    for row in ws.iter_rows(min_row=start_row_no+1, max_row=start_row_no+max_row_no, min_col=min_col_no, max_col=max_col_no):
+        for row_cell in row:
+            reset_formatting_style(row_cell)
+            if row_counter % 2:
+                add_row_banding_style(row_cell)
+            # if first row
+            if row_counter == 0:
+                set_column_header_style(row_cell)
+
+        row_counter += 1
+    
+    first_col_width = first_col_min_width
+    remaining_col_width = other_col_min_width
+    # adjust first column width
+    apply_column_width(ws, first_col_width, start_row_no, start_row_no+max_row_no, ws_max_col=1, header_styling=True)
+    # adjust remaining column width
+    apply_column_width(ws, remaining_col_width, start_row_no, start_row_no+max_row_no, ws_min_col=min_col_no+1,ws_max_col=max_col_no)

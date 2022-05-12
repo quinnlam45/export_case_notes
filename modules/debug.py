@@ -2,6 +2,7 @@ from asyncore import write
 from cgi import test
 from fileinput import filename
 import io
+from json import load
 from tempfile import NamedTemporaryFile
 from turtle import mode
 
@@ -10,7 +11,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.writer.excel import save_virtual_workbook, save_workbook, ExcelWriter
 from openpyxl.styles import Font
 import pandas as pd
-from excel_module import read_excel_file, apply_default_style, set_max_column_width, set_row_header_style
+from excel_module import *
 
 from pivot_table import PivotTable, make_pivot_table, pivot_df
 
@@ -81,7 +82,7 @@ def write_to_excel_multiple_sheets(file_obj):
                 df.to_excel(writer, startrow=current_row, sheet_name=sh_name, na_rep=0)                
                 
                 ws = wb[sh_name]
-                #apply_default_style(ws, current_row, no_of_rows_in_df, no_of_cols_in_df)
+                apply_table_styling(ws, current_row, no_of_rows_in_df, no_of_cols_in_df)
                 
                 current_row += no_of_rows_in_df
             # adjust col widths
@@ -117,19 +118,37 @@ def df_to_excel(df, dest_filename):
         df.to_excel(writer)
         writer.save()
 
-# stream = build_report(write_to_excel_multiple_sheets)
-# bytes_to_file(stream, ex_file)
+stream = build_report(write_to_excel_multiple_sheets)
+bytes_to_file(stream, ex_file)
 
-wb = Workbook()
-ws = wb.active
-ws['A4'] = 'testtttttttttttt'
-ws['A5'] = 123
-ws['A6'] = 0.123
-ws['B4'] = 'testtttttttttttt'
-ws['B5'] = 123
-ws['B6'] = 0.123
+def apply_ind_styles(f):
+    wb = Workbook()
+    ws = wb.active
+    ws['A4'] = 'testtttttttttttt'
+    ws['A5'] = 123
+    ws['A6'] = 0.123
+    ws['B4'] = 'testtttttttttttt'
+    ws['B5'] = 123
+    ws['B6'] = 0.123
 
-set_max_column_width(ws, 5, 6, 2, ws_min_row=1)
-set_row_header_style(ws, 6, 1, ws_min_row=1)
+    apply_column_width(ws, 5, 6, 2, ws_min_row=1)
 
-wb.save(ex_file)
+    wb.save(f)
+
+def try_with_df(f):
+    df_to_excel(df_dummy_pivot, f)
+    wb = load_workbook(f)
+    ws = wb.active
+    apply_table_styling(ws, 1, 4, 4)
+    wb.save(f)
+
+# apply_ind_styles(ex_file)
+# try_with_df(ex_file)
+
+def func_test(col_range=(1, 3)):
+    col_min = col_range[0]
+    col_max = col_range[1]
+    print(col_min)
+    print(col_max)
+
+# func_test(col_range=(5, 7))
