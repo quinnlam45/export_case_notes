@@ -126,12 +126,12 @@ def apply_ind_styles(f):
     ws = wb.active
     ws['A4'] = 'testtttttttttttt'
     ws['A5'] = 123
-    ws['A6'] = 0.123
+    ws['A6'] = '0.123%'
     ws['B4'] = 'testtttttttttttt'
     ws['B5'] = 123
-    ws['B6'] = 0.123
+    ws['B6'] = '0.1230%'
 
-    apply_column_width(ws, 5, 6, 2, ws_min_row=1)
+    apply_table_styling(ws, 1, 7, 6)
 
     wb.save(f)
 

@@ -13,23 +13,32 @@ class PivotTable:
     #calculate %
     def add_percent_col(self):
         for df_col in self.df.columns:
-            self.df[df_col + ' %'] = (self.df[df_col]/self.df[df_col].sum()).round(2).map('{:03.2f}'.format).astype(float)    
+            self.df[df_col + ' %'] = (self.df[df_col]/self.df[df_col].sum()).round(2).map('{:03.2f}%'.format) 
 
     #col totals
 
     #sort functions
-    def sort_pivot_table(self, sort_on='columns', asc=True):
-        axis = 1
-        if sort_on == 'rows':
+    def sort_pivot_table_headings(self, sort_by='columns', asc=True):
+        if sort_by == 'rows':
             axis = 0
+        else:
+            axis = 1
 
         self.df.sort_index(axis=axis, ascending=asc, inplace=True)
+
+    def sort_pivot_table_values(self, sort_by='rows', col_to_sort='Total', asc=False):
+        if sort_by == 'columns':
+            axis = 1
+        else:
+            axis = 0
+        self.df.sort_values(by=col_to_sort, axis=axis, ascending=asc, inplace=True)
 
 
 def make_pivot_table(pivoted_df):
     pivot_table = PivotTable(pivoted_df)
     pivot_table.add_totals_col()
     pivot_table.add_percent_col()
+    pivot_table.sort_pivot_table_values()
 
     return pivot_table.df
 

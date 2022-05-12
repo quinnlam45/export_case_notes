@@ -1,7 +1,8 @@
 import io
+import re
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo, TableColumn
-from openpyxl.styles import Font, Alignment, Border, Side, NamedStyle, PatternFill, Color
+from openpyxl.styles import Font, Alignment, Border, Side, NamedStyle, PatternFill, Color, numbers
 from openpyxl.worksheet.properties import WorksheetProperties, PageSetupProperties
 from openpyxl.worksheet.page import PrintPageSetup, PageMargins
 from openpyxl.worksheet.header_footer import HeaderFooter, HeaderFooterItem
@@ -130,7 +131,6 @@ def set_row_header_style(cell):
     cell.alignment = Alignment(horizontal='left', vertical="top")
 
 def return_max_column_width(cell_value, min_col_width_setting):
-
     if len(cell_value) > min_col_width_setting:
         max_width = len(cell_value)
     else:
@@ -138,15 +138,26 @@ def return_max_column_width(cell_value, min_col_width_setting):
     
     return max_width
 
+def apply_excel_percent_formatting(cell):
+    cell_val = cell.value
+    # remove % sign and convert
+    cell.value = float(cell_val[:-1])
+    cell.number_format = numbers.FORMAT_PERCENTAGE
 
-def apply_column_width(ws, min_col_width_setting, ws_min_row, ws_max_row, ws_max_col, ws_min_col=1, header_styling=False):
+def apply_column_width(ws, min_col_width_setting, ws_min_row, ws_max_row, ws_max_col, ws_min_col=1, header_styling=False, fixed_width=False):
     max_width = min_col_width_setting
     for column in ws.iter_cols(min_row=ws_min_row, max_row=ws_max_row, min_col=ws_min_col, max_col=ws_max_col):
         for column_cell in column:
+            
             if header_styling == True:
                 set_row_header_style(column_cell)
+            
             if column_cell != None and isinstance(column_cell.value, str):
-                max_width = return_max_column_width(column_cell.value, max_width)
+                if fixed_width == False:
+                    max_width = return_max_column_width(column_cell.value, max_width)
+                else:
+                    max_width = min_col_width_setting
+        
         ws.column_dimensions[column_cell.column_letter].width = max_width
 
 def apply_table_styling(ws, start_row_no, max_row_no, max_col_no, min_col_no=1, first_col_min_width=25, other_col_min_width=10):
@@ -158,11 +169,17 @@ def apply_table_styling(ws, start_row_no, max_row_no, max_col_no, min_col_no=1, 
     for row in ws.iter_rows(min_row=start_row_no+1, max_row=start_row_no+max_row_no, min_col=min_col_no, max_col=max_col_no):
         for row_cell in row:
             reset_formatting_style(row_cell)
+            
             if row_counter % 2:
                 add_row_banding_style(row_cell)
+            
             # if first row
             if row_counter == 0:
                 set_column_header_style(row_cell)
+            
+            cell_val = row_cell.value
+            if isinstance(cell_val, str) and re.search('\d%', cell_val) != None:
+                apply_excel_percent_formatting(row_cell)
 
         row_counter += 1
     
@@ -171,4 +188,4 @@ def apply_table_styling(ws, start_row_no, max_row_no, max_col_no, min_col_no=1, 
     # adjust first column width
     apply_column_width(ws, first_col_width, start_row_no, start_row_no+max_row_no, ws_max_col=1, header_styling=True)
     # adjust remaining column width
-    apply_column_width(ws, remaining_col_width, start_row_no, start_row_no+max_row_no, ws_min_col=min_col_no+1,ws_max_col=max_col_no)
+    apply_column_width(ws, remaining_col_width, start_row_no, start_row_no+max_row_no, ws_min_col=min_col_no+1, ws_max_col=max_col_no, fixed_width=True)
