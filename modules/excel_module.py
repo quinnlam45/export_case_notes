@@ -108,3 +108,63 @@ def create_case_notes_file(data, clientID):
 
     excel_data = save_virtual_workbook(wb)
     return excel_data
+
+def reset_formatting(ws, start_row_no, max_row_no, max_col_no):
+    ft = Font(bold=False)
+    bd_style = Side(border_style=None)
+    border_setting = Border(top=bd_style, left=bd_style, right=bd_style, bottom=bd_style)
+
+    row_counter = 0
+    for row in ws.iter_rows(min_row=start_row_no, max_row=start_row_no+max_row_no, min_col=1, max_col=max_col_no):
+        for row_cell in row:
+            row_cell.font = ft
+            row_cell.border = border_setting
+        row_counter += 1
+
+def add_row_banding(ws, start_row_no, max_row_no, max_col_no):
+    row_counter = 0
+    for row in ws.iter_rows(min_row=start_row_no, max_row=start_row_no+max_row_no, min_col=1, max_col=max_col_no):
+        for row_cell in row:
+            if row_counter % 2:
+                row_cell.style = "20 % - Accent1"
+                row_cell.font = Font(size=11)
+        row_counter += 1
+
+def set_column_header_style(ws, start_row_no, max_col_no):
+    for row in ws.iter_rows(min_row=start_row_no, max_row=start_row_no, min_col=1, max_col=max_col_no):
+        for row_cell in row:
+            row_cell.style = "Total"
+            row_cell.font = Font(size=11, bold=True)
+            row_cell.alignment = Alignment(wrap_text=True, vertical="top")
+
+
+def find_max_str_length(max_value, str_val):
+    max_str_len = max_value
+    
+    if len(str_val) > max_value:
+        max_str_len = len(str_val)
+
+    return max_str_len
+
+def set_row_header_style(ws, ws_max_row, ws_max_col, ws_min_row=4):
+    for column in ws.iter_cols(min_row=ws_min_row, max_col=ws_max_col, max_row=ws_max_row):
+        for column_cell in column:
+            column_cell.alignment = Alignment(horizontal='left', vertical="top")
+
+def set_max_column_width(ws, max_col_width_setting, ws_max_row, ws_max_col, ws_min_row=4):
+    #iterate through col cells
+    max_width = max_col_width_setting
+    for column in ws.iter_cols(min_row=ws_min_row, max_col=ws_max_col, max_row=ws_max_row):
+        for column_cell in column:
+            if column_cell != None and isinstance(column_cell.value, str):
+                max_width = find_max_str_length(max_width, column_cell.value)
+    
+    # set col width
+        ws.column_dimensions[column_cell.column_letter].width = max_width
+
+def apply_default_style(ws, start_row_no, max_row_no, max_col_no):
+    reset_formatting(ws, start_row_no, max_row_no, max_col_no)
+    add_row_banding(ws, start_row_no, max_row_no, max_col_no)
+    set_column_header_style(ws, start_row_no, max_col_no)
+    set_row_header_style(ws, max_row_no, max_col_no)
+    set_max_column_width(ws, 80, max_row_no, max_col_no)

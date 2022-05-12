@@ -10,7 +10,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.writer.excel import save_virtual_workbook, save_workbook, ExcelWriter
 from openpyxl.styles import Font
 import pandas as pd
-from excel_module import read_excel_file
+from excel_module import read_excel_file, apply_default_style, set_max_column_width, set_row_header_style
 
 from pivot_table import PivotTable, make_pivot_table, pivot_df
 
@@ -58,14 +58,13 @@ for risk_level in risk_category:
 
 ex_file = 'test_output.xlsx'
 
-# def apply_index_format():
-#     return "background-color: yellow;"
+
 
 def write_to_excel_multiple_sheets(file_obj):
     with pd.ExcelWriter(file_obj) as writer:
+        wb = writer.book
 
         for f in filenames: # run each query
-            current_row = 0
             data = read_excel_file(f) # get data method
             df = pd.DataFrame(data[1:], columns=data[0])
 
@@ -73,13 +72,20 @@ def write_to_excel_multiple_sheets(file_obj):
 
             sh_name = f[:-5]
 
-            for df in pivoted_df_list:
-                # df_style = df.style
-                # df_style.applymap_index(apply_index_format)
+            current_row = 0
 
-                df.to_excel(writer, startrow=current_row+1, sheet_name=sh_name, na_rep=0)
-                no_rows_in_df = return_no_of_df_rows(df)
-                current_row += no_rows_in_df
+            for df in pivoted_df_list:
+                no_of_cols_in_df = len(df.columns) + 1
+                no_of_rows_in_df = len(df.index) + 1
+                current_row += 1
+                df.to_excel(writer, startrow=current_row, sheet_name=sh_name, na_rep=0)                
+                
+                ws = wb[sh_name]
+                #apply_default_style(ws, current_row, no_of_rows_in_df, no_of_cols_in_df)
+                
+                current_row += no_of_rows_in_df
+            # adjust col widths
+            
 
         writer.save()
 
@@ -105,6 +111,25 @@ def bytes_to_file(stream, filename):
         stream.seek(0)
         ex_file.write(stream.read())
 
+def df_to_excel(df, dest_filename):
 
-stream = build_report(write_to_excel_multiple_sheets)
-bytes_to_file(stream, ex_file)
+    with pd.ExcelWriter(dest_filename) as writer:
+        df.to_excel(writer)
+        writer.save()
+
+# stream = build_report(write_to_excel_multiple_sheets)
+# bytes_to_file(stream, ex_file)
+
+wb = Workbook()
+ws = wb.active
+ws['A4'] = 'testtttttttttttt'
+ws['A5'] = 123
+ws['A6'] = 0.123
+ws['B4'] = 'testtttttttttttt'
+ws['B5'] = 123
+ws['B6'] = 0.123
+
+set_max_column_width(ws, 5, 6, 2, ws_min_row=1)
+set_row_header_style(ws, 6, 1, ws_min_row=1)
+
+wb.save(ex_file)
