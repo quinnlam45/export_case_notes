@@ -14,7 +14,7 @@ class PivotTable:
     def add_percent_col(self):
         for df_col in self.df.columns:
             self.df[df_col + ' %'] = (self.df[df_col]/self.df[df_col].sum()).round(2).map('{:03.2f}%'.format) 
-
+            #self.df.replace('NaN%', '0.0%')
     #col totals
 
     #sort functions
@@ -38,7 +38,8 @@ def make_pivot_table(pivoted_df):
     pivot_table = PivotTable(pivoted_df)
     pivot_table.add_totals_col()
     pivot_table.add_percent_col()
-    pivot_table.sort_pivot_table_values()
+    if pivoted_df.index.name != 'Age group':
+        pivot_table.sort_pivot_table_values()
 
     return pivot_table.df
 

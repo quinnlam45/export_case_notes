@@ -23,7 +23,7 @@ df = pd.DataFrame(dataframe_data, columns=dataframe_columns)
 
 
 df_columns = {'High': [2, 5, 6], 'Medium': [7, 3, 2], 'Standard': [0, 3, 2]}
-df_index = ['Sandwell', 'Dudley', 'Walsall']
+df_index = ['Sandwell', 'Dudley', 'Walsall',]
 df_dummy_pivot = pd.DataFrame(df_columns, index=df_index).rename_axis(index="Area", columns="Risk")
 
 
@@ -154,5 +154,23 @@ def func_test(col_range=(1, 3)):
 
 # func_test(col_range=(5, 7))
 
-sql = get_cases('1 Jan 2019', '12 May 2022', '89', '')
-print(sql)
+#sql = get_cases('1 Jan 2019', '12 May 2022', '89', '')
+#print(sql)
+print(df_dummy_pivot)
+
+
+age_groups = ['12 and under',
+    '13-18 years',
+    '19-24 years',
+    '25-34 years',
+    '35-44 years',
+    '45-54 years',
+    '55-64 years',
+    '65-74 years',
+    '75+ years'
+    ]
+areas = ['Sandwell', 'Dudley', 'Walsall', 'Wolv']
+
+df1 = pd.DataFrame(None, index=areas)
+df_con = pd.concat([df1, df_dummy_pivot], axis=1, sort=True).rename_axis('Area', axis='columns').replace('NaN%', '0.0%')
+print(df_con)
