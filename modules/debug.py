@@ -14,6 +14,7 @@ import pandas as pd
 from excel_module import *
 
 from pivot_table import PivotTable, make_pivot_table, pivot_df
+from get_data import get_cases
 
 
 dataframe_columns = ['CaseID', 'Referrer', 'Area', 'Risk']
@@ -118,8 +119,8 @@ def df_to_excel(df, dest_filename):
         df.to_excel(writer)
         writer.save()
 
-stream = build_report(write_to_excel_multiple_sheets)
-bytes_to_file(stream, ex_file)
+#stream = build_report(write_to_excel_multiple_sheets)
+#bytes_to_file(stream, ex_file)
 
 def apply_ind_styles(f):
     wb = Workbook()
@@ -152,3 +153,6 @@ def func_test(col_range=(1, 3)):
     print(col_max)
 
 # func_test(col_range=(5, 7))
+
+sql = get_cases('1 Jan 2019', '12 May 2022', '89', '')
+print(sql)

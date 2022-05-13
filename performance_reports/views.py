@@ -19,15 +19,8 @@ def index(request):
         #print(data_output)
         # build excel report here
         if request.method == "POST":
-            df_columns = {'High': [2, 5, 6], 'Medium': [7, 3, 2], 'Standard': [0, 3, 2]}
-            df_index = ['Sandwell', 'Dudley', 'Walsall']
-            df = pd.DataFrame(df_columns, index=df_index).rename_axis(index="Area", columns="Risk")
 
             excel_data = io.BytesIO()
-
-            with pd.ExcelWriter(excel_data) as writer:
-                df.to_excel(writer, sheet_name='Sheet')
-                df.to_excel(writer, sheet_name='Sheet', startrow=7) 
 
             response = HttpResponse(excel_data, headers={
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
