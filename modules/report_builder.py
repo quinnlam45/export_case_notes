@@ -48,6 +48,7 @@ def return_pivoted_dfs(df, df_rows, df_cols):
     dfs_list = []
     
     for df_row in df_rows:
+
         if df_row == 'Age group':
             pivoted_df = pivot_df(df, df_row, df_cols)
             age_groups = ['12 and under',
