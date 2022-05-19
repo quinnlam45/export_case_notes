@@ -9,7 +9,6 @@ def get_cases(start_range, end_range, srv_str, grp_str, case_typ="Opened"):
 
     try:
         #connection = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER={DESKTOP-TC8EDHO\SQLEXPRESS};DATABASE=4site;Trusted_connection=yes'
-        conn_str = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=4site-2019;DATABASE=4site;Trusted_Connection=yes;"
         connection = pyodbc.connect(conn_str)
         cursor = connection.cursor()
 
