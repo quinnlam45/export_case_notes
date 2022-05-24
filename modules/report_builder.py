@@ -32,6 +32,17 @@ def build_report(excel_writer):
 
     return buffer
 
+def read_file_obj_to_bytes(file_obj):
+
+    file_bytes = io.BytesIO()
+
+    file_obj.seek(0)
+    stream = file_obj.read()
+    file_bytes.write(stream)
+
+    return file_bytes
+
+
 def bytes_to_file(stream, filename):
     with open(filename, 'wb') as ex_file:
         stream.seek(0)

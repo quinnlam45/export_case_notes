@@ -20,7 +20,6 @@ def get_cases(start_range, end_range, srv_str, grp_str, case_typ="Opened"):
            sql = "EXEC spQLGetClosureOutcomes @StartRange=%s, @EndRange=%s, @strServiceString=%s, @groupString=%s"
 
         # connection = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER={DESKTOP-TC8EDHO\SQLEXPRESS};DATABASE=4site;Trusted_connection=yes'
-        #conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=4Site-2019;UID={SandwellWomansAid.local\4Site};PWD=4sitesan;data source=.\SQLEXPRESS;Integrated Security=true;AttachDBFilename=|DataDirectory|aspnetdb.mdf;User Instance=true'
         #connection = pyodbc.connect(conn_str)
         # if case_type == "Opened":
         #     sql = "EXEC spQLGetCasesOpened @StartRange=?, @EndRange=?, @strServiceString=?, @groupString=?"
