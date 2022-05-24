@@ -55,7 +55,7 @@ def create_case_notes_file(data, clientID):
     ws1["A1"].font = Font(bold=True)
     bd = Side(border_style="thin")
     ws1["A1"].border = Border(top=bd, bottom=bd)
-    ws1["A2"] = int(clientID)    
+    ws1["A2"] = clientID    
     ws1["A2"].fill = PatternFill("solid", fgColor=Color(indexed=22))
     
     max_col_width = 10
