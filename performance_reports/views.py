@@ -33,14 +33,15 @@ def index(request):
 
 def export_notes(request):
     try:
-
         if request.method == "POST":
             # validate clientID is int
             clientID = request.POST['clientID']
             srv_str = ''
             grp_str = ''
-            print(clientID)
-            excel_data = create_case_notes(int(clientID))
+            #print(clientID)
+
+            pw, excel_data = create_case_notes(clientID)
+            print(pw)
 
             response = HttpResponse(excel_data, headers={
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 

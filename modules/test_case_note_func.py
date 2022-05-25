@@ -2,6 +2,7 @@ from asyncore import read
 import unittest
 import datetime
 from case_note_func import *
+from export_case_notes import *
 from excel_module import read_excel_file
 from fixture_transform_case_note_func import expected_transformed_case_notes
 
@@ -41,8 +42,11 @@ class CaseNoteFuncTest(unittest.TestCase):
         self.assertEqual(expected_result, transformed_rows)
     
     def test_transform_case_note_data(self):
-        filename = r"C:\Users\quinn\Documents\Programming\performance_dashboard\performance_dashboard\test_case_notes_transform_data_v1.xlsx"
-        fake_SQL_data = read_excel_file(filename)
-        transformed_data = transform_case_note_data(fake_SQL_data)
-        self.assertEqual(expected_transformed_case_notes, transformed_data)
-        self.assertListEqual(expected_transformed_case_notes, transformed_data)
+        # replace fake SQL data
+        pass
+        #filename = r"C:\Users\quinn\Documents\Programming\performance_dashboard\performance_dashboard\test_case_notes_transform_data_v1.xlsx"
+        #fake_SQL_data = read_excel_file(filename)
+        #transformed_data = transform_case_note_data(fake_SQL_data)
+        #self.assertEqual(expected_transformed_case_notes, transformed_data)
+        #self.assertListEqual(expected_transformed_case_notes, transformed_data)
+

@@ -1,14 +1,18 @@
 import io
+import os
+import string
+import random
 import re
 from tempfile import NamedTemporaryFile
+
+import xlwings as xw
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo, TableColumn
 from openpyxl.styles import Font, Alignment, Border, Side, NamedStyle, PatternFill, Color, numbers
 from openpyxl.worksheet.properties import WorksheetProperties, PageSetupProperties
 from openpyxl.worksheet.page import PrintPageSetup, PageMargins
 from openpyxl.worksheet.header_footer import HeaderFooter, HeaderFooterItem
-from openpyxl.writer.excel import save_virtual_workbook
-
+from openpyxl.writer.excel import ExcelWriter
 import pandas as pd
 
 # reads excel file and returns python data object/fake SQL data
@@ -47,14 +51,94 @@ def df_to_IO(df):
     
     return stream
 
-def create_case_notes_file(data, clientID):
-    sql_data = data
+def remove_file_if_exists(filename):
+    if os.path.exists(filename):
+        os.remove(filename)
+
+def read_file_return_bytes(filename):
     excel_file_bytes = io.BytesIO()
 
-    with NamedTemporaryFile(suffix='.xlsx') as tmp:
-        wb = Workbook()
+    if os.path.exists(filename):
+        with open(filename, 'rb') as excel_file:
+            excel_file.seek(0)
+            bytes_stream = excel_file.read()
+            excel_file_bytes.write(bytes_stream)
+            excel_file.close()
 
+        excel_file_bytes.seek(0)
+        return excel_file_bytes
+    
+    else:
+        raise Exception(f'File: {filename} does not exist')
+
+def create_random_pw_string():
+    no_of_characters = random.randint(3,5)
+    no_of_letters = random.randint(5,6)
+    
+    characters = string.ascii_letters + string.digits + '!£$%^*_#~-.@'
+    pw_letters = string.ascii_letters
+    
+    rand_char = ''.join(random.choice(characters) for i in range(no_of_characters))
+    rand_letters = ''.join(random.choice(pw_letters) for i in range(no_of_letters))
+    
+    pw_string = rand_char + rand_letters
+    
+    # shuffle characters
+    pw_list = list(pw_string)
+    random.SystemRandom().shuffle(pw_list)
+    pw_string = ''.join(pw_list)
+    
+    return pw_string
+
+def create_temp_file_name(string_length=10):
+    characters = string.ascii_letters + string.digits
+    rand_char = ''.join(random.choice(characters) for i in range(string_length))
+    return rand_char
+
+def set_password_for_excel(filename, pw):
+    from pathlib import Path
+    import subprocess
+
+    excel_file_path = Path(filename)
+
+    vbs_script = \
+    f"""' Save with password required upon opening
+
+    Set excel_object = CreateObject("Excel.Application")
+    Set workbook = excel_object.Workbooks.Open("{excel_file_path}")
+
+    excel_object.DisplayAlerts = False
+    excel_object.Visible = False
+
+    workbook.SaveAs "{excel_file_path}",, "{pw}"
+
+    workbook.Close()
+
+    excel_object.Application.Quit
+    """
+
+    # write
+    vbs_script_path = excel_file_path.parent.joinpath("set_pw.vbs")
+    with open(vbs_script_path, "w") as file:
+        file.write(vbs_script)
+
+    #execute
+    subprocess.call(['cscript.exe', str(vbs_script_path)])
+
+    # remove
+    vbs_script_path.unlink()
+
+    return None
+
+def create_case_notes_file(data, clientID, filename):
+    sql_data = data
+    # if file exists and cannot delete create altered filename
+    remove_file_if_exists(filename)
+
+    try:
+        wb = Workbook()
         ws1 = wb.active
+        ws1.sheet_state = 'visible'
         ws1["A1"] = "Client ref"
         ws1["A1"].font = Font(bold=True)
         bd = Side(border_style="thin")
@@ -87,7 +171,7 @@ def create_case_notes_file(data, clientID):
         tab = Table(displayName="Table1", ref=datarange)
 
         style = TableStyleInfo(name="TableStyleLight1", showFirstColumn=False,
-                           showLastColumn=False, showRowStripes=True, showColumnStripes=False)
+                            showLastColumn=False, showRowStripes=True, showColumnStripes=False)
         tab.tableStyleInfo = style
         ws1.add_table(tab)
 
@@ -110,14 +194,23 @@ def create_case_notes_file(data, clientID):
         ws1.page_margins = PageMargins(left=0.6, right=0.6, top=0.7, bottom=0.7)
         ws1.oddFooter.right.text = "&[Page]"
         ws1.evenFooter.left.text = "&[Page]"
+    
+        wb.save(filename)
+        wb.close()
 
-        wb.save(tmp)
-        tmp.seek(0)
-        stream = tmp.read()
-        excel_file_bytes.write(stream)
+        password_str = create_random_pw_string()
 
-    excel_file_bytes.seek(0)
-    return excel_file_bytes
+        set_password_for_excel(filename, password_str)
+
+        excel_file_bytes = read_file_return_bytes(filename)        
+
+        return password_str, excel_file_bytes
+    
+    except:
+        #remove_file_if_exists(filename)
+        raise Exception('File not sucessfully created')
+    finally:
+        remove_file_if_exists(filename)
 
 
 def reset_formatting_style(cell):
