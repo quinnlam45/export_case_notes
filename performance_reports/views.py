@@ -44,7 +44,7 @@ def export_notes(request):
 
             response = HttpResponse(excel_data, headers={
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
-                'Content_Disposition': 'attachment; filename="Test_file.xlsx"',})
+                'Content_Disposition': 'attachment; filename="Case_notes.xlsx"',})
             
             return response
         return render(request, 'performance_reports/export_notes.html')

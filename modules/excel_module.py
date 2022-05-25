@@ -1,5 +1,6 @@
 import io
 import re
+from tempfile import NamedTemporaryFile
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo, TableColumn
 from openpyxl.styles import Font, Alignment, Border, Side, NamedStyle, PatternFill, Color, numbers
@@ -48,67 +49,76 @@ def df_to_IO(df):
 
 def create_case_notes_file(data, clientID):
     sql_data = data
-    wb = Workbook()
+    excel_file_bytes = io.BytesIO()
 
-    ws1 = wb.active
-    ws1["A1"] = "Client ref"
-    ws1["A1"].font = Font(bold=True)
-    bd = Side(border_style="thin")
-    ws1["A1"].border = Border(top=bd, bottom=bd)
-    ws1["A2"] = clientID    
-    ws1["A2"].fill = PatternFill("solid", fgColor=Color(indexed=22))
+    with NamedTemporaryFile(suffix='.xlsx') as tmp:
+        wb = Workbook()
+
+        ws1 = wb.active
+        ws1["A1"] = "Client ref"
+        ws1["A1"].font = Font(bold=True)
+        bd = Side(border_style="thin")
+        ws1["A1"].border = Border(top=bd, bottom=bd)
+        ws1["A2"] = clientID    
+        ws1["A2"].fill = PatternFill("solid", fgColor=Color(indexed=22))
     
-    max_col_width = 10
+        max_col_width = 10
     
-    # add data
-    start_row = ws1.max_row + 1
-    for row_no, datarow in enumerate(sql_data, start=1):
-        for col_no, value in enumerate(datarow, start=1):
-            #print(row)
-            #print(value)
-            ws1.cell(row=start_row+row_no, column=col_no, value=value)
-            # update max col width
-            if col_no == 1 and len(value) > max_col_width:
-                max_col_width = len(value)
+        # add data
+        start_row = ws1.max_row + 1
+        for row_no, datarow in enumerate(sql_data, start=1):
+            for col_no, value in enumerate(datarow, start=1):
+                #print(row)
+                #print(value)
+                ws1.cell(row=start_row+row_no, column=col_no, value=value)
+                # update max col width
+                if col_no == 1 and len(value) > max_col_width:
+                    max_col_width = len(value)
 
-    max_row = ws1.max_row
-    start_row += 1
-    max_col_letter = ws1.cell(column=ws1.max_column, row=1).column_letter
+        max_row = ws1.max_row
+        start_row += 1
+        max_col_letter = ws1.cell(column=ws1.max_column, row=1).column_letter
     
-    # set width of last col
-    ws1.column_dimensions[max_col_letter].width = 80
+        # set width of last col
+        ws1.column_dimensions[max_col_letter].width = 80
     
-    # convert data range into table
-    datarange = f"A{start_row}:{max_col_letter}{max_row}"
-    tab = Table(displayName="Table1", ref=datarange)
+        # convert data range into table
+        datarange = f"A{start_row}:{max_col_letter}{max_row}"
+        tab = Table(displayName="Table1", ref=datarange)
 
-    style = TableStyleInfo(name="TableStyleLight1", showFirstColumn=False,
-                       showLastColumn=False, showRowStripes=True, showColumnStripes=False)
-    tab.tableStyleInfo = style
-    ws1.add_table(tab)
+        style = TableStyleInfo(name="TableStyleLight1", showFirstColumn=False,
+                           showLastColumn=False, showRowStripes=True, showColumnStripes=False)
+        tab.tableStyleInfo = style
+        ws1.add_table(tab)
 
-    # adjust other col width
-    ft = Font(b=True)
-    for col in ws1.iter_cols(min_row=4, max_col=ws1.max_column-1, max_row=max_row):
-        col_width = 9
-        for cell in col:
-            cell.alignment = Alignment(vertical="top")
-            if isinstance(cell.value, str) and len(cell.value) > col_width:
-                col_width = len(cell.value)
-        ws1.column_dimensions[cell.column_letter].width = col_width
+        # adjust other col width
+        ft = Font(b=True)
+        for col in ws1.iter_cols(min_row=4, max_col=ws1.max_column-1, max_row=max_row):
+            col_width = 9
+            for cell in col:
+                cell.alignment = Alignment(vertical="top")
+                if isinstance(cell.value, str) and len(cell.value) > col_width:
+                    col_width = len(cell.value)
+            ws1.column_dimensions[cell.column_letter].width = col_width
 
-    for row in ws1.iter_rows(min_row=start_row, min_col=ws1.max_column, max_col=ws1.max_column, max_row=max_row):
-        for row_cell in row:
-            row_cell.alignment = Alignment(wrap_text=True, vertical="top")
+        for row in ws1.iter_rows(min_row=start_row, min_col=ws1.max_column, max_col=ws1.max_column, max_row=max_row):
+            for row_cell in row:
+                row_cell.alignment = Alignment(wrap_text=True, vertical="top")
     
-    # page and print setup
-    ws1.page_setup = PrintPageSetup(orientation = "landscape", scale=70, paperSize=9)
-    ws1.page_margins = PageMargins(left=0.6, right=0.6, top=0.7, bottom=0.7)
-    ws1.oddFooter.right.text = "&[Page]"
-    ws1.evenFooter.left.text = "&[Page]"
+        # page and print setup
+        ws1.page_setup = PrintPageSetup(orientation = "landscape", scale=70, paperSize=9)
+        ws1.page_margins = PageMargins(left=0.6, right=0.6, top=0.7, bottom=0.7)
+        ws1.oddFooter.right.text = "&[Page]"
+        ws1.evenFooter.left.text = "&[Page]"
 
-    excel_data = save_virtual_workbook(wb)
-    return excel_data
+        wb.save(tmp)
+        tmp.seek(0)
+        stream = tmp.read()
+        excel_file_bytes.write(stream)
+
+    excel_file_bytes.seek(0)
+    return excel_file_bytes
+
 
 def reset_formatting_style(cell):
     ft = Font(bold=False)
