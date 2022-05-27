@@ -130,9 +130,8 @@ def set_password_for_excel(filename, pw):
 
     return None
 
-def create_case_notes_file(data, clientID, filename):
+def create_case_notes_excel_file(data, clientID, filename, pw_str):
     sql_data = data
-    # if file exists and cannot delete create altered filename
     remove_file_if_exists(filename)
 
     try:
@@ -198,13 +197,11 @@ def create_case_notes_file(data, clientID, filename):
         wb.save(filename)
         wb.close()
 
-        password_str = create_random_pw_string()
-
-        set_password_for_excel(filename, password_str)
+        set_password_for_excel(filename, pw_str)
 
         excel_file_bytes = read_file_return_bytes(filename)        
 
-        return password_str, excel_file_bytes
+        return excel_file_bytes
     
     except:
         #remove_file_if_exists(filename)

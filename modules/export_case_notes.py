@@ -5,12 +5,12 @@ from modules.get_data import get_case_notes
 
 temp_path = settings.TEMP_DIR
 
-def create_case_notes(clientID, srv_str='', grp_str=''):
+def create_case_notes(clientID, pw_str, srv_str='', grp_str=''):
     case_note_data = get_case_notes(clientID, srv_str, grp_str)
 
     temp_file_name = create_temp_file_name()
 
-    filename = temp_path + '\\' + temp_file_name + ".xlsx"
+    filename = temp_path + '\\' + temp_file_name + '.xlsx'
 
     string_length_limit = 1000
 
@@ -19,6 +19,17 @@ def create_case_notes(clientID, srv_str='', grp_str=''):
     client_initials = case_note_data[1][0]
     print(client_initials)
     print(transformed_rows)
-    pw_str, excel_file_data = create_case_notes_file(transformed_rows, clientID, filename)
 
-    return pw_str, excel_file_data
+    with open(temp_path + '\\' + 'temp_info.txt', 'w') as pw_file:
+        pw_file.write(pw_str)
+
+    excel_file_data = create_case_notes_excel_file(transformed_rows, clientID, filename, pw_str)
+
+    return excel_file_data
+
+def retrieve_download_info():
+    temp_file = temp_path + '\\' + 'temp_info.txt'
+    with open(temp_file, 'r') as text_file:
+        txt = text_file.read()
+        return txt
+   # remove_file_if_exists(temp_file)

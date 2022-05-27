@@ -1,7 +1,8 @@
+import requests
 from http.client import HTTPResponse
 from django.shortcuts import render
 from django.db import Error
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import io
 import pandas as pd
 from openpyxl import Workbook
@@ -11,7 +12,7 @@ from openpyxl.styles import Font
 from modules.get_data import get_cases
 from modules.excel_module import *
 from modules.case_note_func import transform_case_note_data
-from modules.export_case_notes import create_case_notes
+from modules.export_case_notes import *
 
 # Create your views here.
 def index(request):
@@ -33,21 +34,29 @@ def index(request):
 
 def export_notes(request):
     try:
-        if request.method == "POST":
-            # validate clientID is int
+        if request.method == 'POST':
+
             clientID = request.POST['clientID']
+            pw_str = request.POST['random-str']
             srv_str = ''
             grp_str = ''
             #print(clientID)
 
-            pw, excel_data = create_case_notes(clientID)
-            print(pw)
+            excel_data = create_case_notes(clientID,pw_str)
+            #print(pw)
 
             response = HttpResponse(excel_data, headers={
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
                 'Content_Disposition': 'attachment; filename="Case_notes.xlsx"',})
-            
+
             return response
-        return render(request, 'performance_reports/export_notes.html')
+
+        else:
+            return render(request, 'performance_reports/export_notes.html')
+
     except Error as err:
         return HttpResponse(f"Error: {err}")
+
+def get_random_string(request):
+    pw_str = create_random_pw_string()
+    return HttpResponse(pw_str)
