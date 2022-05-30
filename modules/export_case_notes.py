@@ -20,16 +20,7 @@ def create_case_notes(clientID, pw_str, srv_str='', grp_str=''):
     print(client_initials)
     print(transformed_rows)
 
-    with open(temp_path + '\\' + 'temp_info.txt', 'w') as pw_file:
-        pw_file.write(pw_str)
-
     excel_file_data = create_case_notes_excel_file(transformed_rows, clientID, filename, pw_str)
 
     return excel_file_data
 
-def retrieve_download_info():
-    temp_file = temp_path + '\\' + 'temp_info.txt'
-    with open(temp_file, 'r') as text_file:
-        txt = text_file.read()
-        return txt
-   # remove_file_if_exists(temp_file)

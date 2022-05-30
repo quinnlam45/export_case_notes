@@ -29,13 +29,12 @@
                 </div>
 
                 <div class="col d-flex align-items-end">
-                    <button type="submit" class="btn btn-outline-light text-dark"><i class="bi bi-search" style="color: white;"> Search</i></button>
+                    <button type="submit" id="submit-button" class="btn btn-outline-light text-dark"><i class="bi bi-search" style="color: white;"> Search</i></button>
                 </div>
 
             </div>
             <div class="row p-3">
-                <div class="col-6" id="status-box" name="status-box">
-                    <p>Status text here:</p>
+                <div class="col-6" id="status-box" name="status-box" style="display: none">
                 </div>
             </div>
 
@@ -45,7 +44,9 @@
     <script>
         "use strict";
         const statusBox = document.getElementById('status-box');
-        const randomStrField = document.getElementById('random-str');
+        const randomStrFormField = document.getElementById('random-str');
+        const submitButton = document.getElementById('submit-button');
+        var randStr;
 
         function getRandomString() {
             fetch('/export_notes/get_str')
@@ -56,15 +57,27 @@
                     return response.text()
                 })
                 .then(random_str => {
-                    statusBox.innerHTML = '<p>' + random_str + '</p>'
-                    randomStrField.value = random_str
-                    console.log(random_str)
+                    randStr = random_str;
+                    randomStrFormField.value = random_str;
+                    //console.log(random_str);
                 })
                 .catch(err => console.error(`${err.message}`));
         }
-        
+
+        function loadRandomStr() {
+            statusBox.innerHTML = '<p>' + randStr + '</p>';
+            statusBox.style.display = "block";
+        }
+
+        function updateRandomStr() {
+            // expose existing random str
+            loadRandomStr();
+            // load new random str for next submit
+            getRandomString()
+        }
 
         window.addEventListener('load', getRandomString);
+        submitButton.addEventListener('click', updateRandomStr);
 
         function checkSpecialChar(event) {
             var e = document.getElementById('myInput');

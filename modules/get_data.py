@@ -18,15 +18,6 @@ def get_cases(start_range, end_range, srv_str, grp_str, case_typ="Opened"):
            sql = "EXEC spQLGetCasesClosed @StartRange=%s, @EndRange=%s, @strServiceString=%s, @groupString=%s"
         elif case_type == "Outcomes":
            sql = "EXEC spQLGetClosureOutcomes @StartRange=%s, @EndRange=%s, @strServiceString=%s, @groupString=%s"
-
-        # connection = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER={DESKTOP-TC8EDHO\SQLEXPRESS};DATABASE=4site;Trusted_connection=yes'
-        #connection = pyodbc.connect(conn_str)
-        # if case_type == "Opened":
-        #     sql = "EXEC spQLGetCasesOpened @StartRange=?, @EndRange=?, @strServiceString=?, @groupString=?"
-        # elif case_type == "Closed":
-        #     sql = "EXEC spQLGetCasesClosed @StartRange=?, @EndRange=?, @strServiceString=?, @groupString=?"
-        # elif case_type == "Outcomes":
-        #     sql = "EXEC spQLGetClosureOutcomes @StartRange=?, @EndRange=?, @strServiceString=?, @groupString=?"
         
         cursor.execute(sql, params)
 
@@ -47,8 +38,6 @@ def get_cases(start_range, end_range, srv_str, grp_str, case_typ="Opened"):
             row = cursor.fetchone()
 
         df = pd.DataFrame(sql_data_rows, columns=field_names)
-        #print(field_names)
-        #print(sql_data_rows)
 
         return df
 

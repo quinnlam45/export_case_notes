@@ -42,7 +42,7 @@ def export_notes(request):
             grp_str = ''
             #print(clientID)
 
-            excel_data = create_case_notes(clientID,pw_str)
+            excel_data = create_case_notes(clientID, pw_str)
             #print(pw)
 
             response = HttpResponse(excel_data, headers={
