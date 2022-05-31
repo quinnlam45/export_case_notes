@@ -7,27 +7,32 @@ def return_pwd_hash(pwd, pwd_salt):
 
     return hash
 
+def lookup_userID(username):
+    cursor = connection.cursor()
+    cursor.execute('SELECT TOP 1 UserID FROM tblQLPDUser WHERE Username=%s', [username])
+    row = cursor.fetchone()
+    if row:
+        user_check_result = row[0]
+        return user_check_result
+    else:
+        return None
+
 def add_pd_user(username, pwd):
     # check if user exists
     try:
-        pwd_salt = bcrypt.gensalt()
-        pwd_hash = return_pwd_hash(pwd, pwd_salt)
-        pwd_salt_str = pwd_salt.decode('utf-8')
+        exists_result = lookup_userID(username)
+        if exists_result == None:
+            pwd_salt = bcrypt.gensalt()
+            pwd_hash = return_pwd_hash(pwd, pwd_salt)
+            pwd_salt_str = pwd_salt.decode('utf-8')
 
-        cursor = connection.cursor()
-        params = (username, pwd_hash, pwd_salt_str)
-        sql_exec = """\
-        DECLARE @resultMessage NVARCHAR(250);
-        EXEC spQLAddPDUser @Username=%s, @Pwd=%s, @PwdSalt=%s, @responseMessage=@resultMessage OUTPUT;
-        SELECT @resultMessage AS Output;
-        """
-        cursor.execute(sql_exec, params)
-        rows = cursor.fetchall()
-        print(rows)
-        sp_output_message = rows[0][0]
+            cursor = connection.cursor()
+            params = (username, pwd_hash, pwd_salt_str)
+            cursor.execute('EXEC spQLAddPDUser @Username=%s, @Pwd=%s, @PwdSalt=%s', params)
 
-        return sp_output_message
-    
+            return 'User added successfully'
+        else:
+            return 'User exists'
     except Error as err:
         print(err)
         return f'Cannot create {username} login'
@@ -36,15 +41,18 @@ def add_pd_user(username, pwd):
 
 def verify_pd_user(username, pwd):
     try:
-        cursor = connection.cursor()
-        cursor.execute('SELECT TOP 1 UserID', params)
-        pwd_salt = bcrypt.gensalt()
-        pwd_hash = return_pwd_hash(pwd, pwd_salt)
-        pwd_salt_str = pwd_salt.decode('utf-8')
+        user_check_result = lookup_userID(username)
 
-        params = (username, pwd_hash, pwd_salt_str)
+        if user_check_result == None:
+            return 'User does not exist'
+        else:
+            cursor = connection.cursor()
+            cursor.execute('SELECT Pwd, PwdSalt UserID WHERE UserID=%s', user_check_result)
+            user_info = namedtuplefetchall(cursor)
+            pwd_salt = user_info[0].PwdSalt
+            pwd_hash = return_pwd_hash(pwd, pwd_salt)
 
-        return 'User created successfully'
+            return 'Login successful'
     
     except Error as err:
         print(err)
