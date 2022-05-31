@@ -17,8 +17,8 @@
 <body>
     <div class="container p-3 h-25 my-5 bg-dark text-white">
         <h1>Performance reports</h1>
-        <p>Welcome to performance dashboard</p>
-        <form action="/" method="POST">
+        <p>Add new user</p>
+        <form action="/add_user" method="POST">
             {% csrf_token %}
             <div class="row p-3">
                 <div class="col-3">
@@ -30,10 +30,17 @@
                         <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="pwd" name="pwd" />
                     </div>
+                    <div class="row p-1">
+                        <label for="password" class="form-label">Confirm password</label>
+                        <input type="password" class="form-control"/>
+                    </div>
                 </div>
                 <div class="col d-flex align-items-end">
-                    <button type="submit" class="btn btn-outline-light text-white">Login</button>
+                    <button type="submit" class="btn btn-outline-light text-white">Add user</button>
                 </div>
+            </div>
+            <div class="row p-3">
+                <p style="font-style: italic">{{message}}</p>
             </div>
 
         </form>
@@ -83,7 +90,7 @@
                 checkbox.checked = false;
                 } else {
                     checkbox.checked = true;
-                }            
+                }
         }
         // convert posted services to JS array
         const srvFormData = "{{service_ID}}";

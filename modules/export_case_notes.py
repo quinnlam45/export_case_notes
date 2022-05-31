@@ -18,7 +18,7 @@ def create_case_notes(clientID, pw_str, srv_str='', grp_str=''):
     
     client_initials = case_note_data[1][0]
     print(client_initials)
-    print(transformed_rows)
+    #print(transformed_rows)
 
     excel_file_data = create_case_notes_excel_file(transformed_rows, clientID, filename, pw_str)
 

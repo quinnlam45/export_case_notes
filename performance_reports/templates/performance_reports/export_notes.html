@@ -19,13 +19,14 @@
     <div class="container p-3 h-25 my-5 bg-dark text-white">
         <h1>Performance reports</h1>
         <p>Export case notes</p>
+        <p style="font-style: italic">Please verify case notes are for correct client</p>
         <form action="/export_notes" method="POST" id="search-form">
             {% csrf_token %}
             <div class="row p-3">
                 <div class="col">
                     <label for="clientID" class="form-label">Enter client ID:</label>
-                    <input type="number" class="form-control" id="clientID" name="clientID"/>
-                    <input type="hidden" id="random-str" name="random-str" value=""/>
+                    <input type="number" class="form-control" id="clientID" name="clientID" />
+                    <input type="hidden" id="random-str" name="random-str" value="" />
                 </div>
 
                 <div class="col d-flex align-items-end">

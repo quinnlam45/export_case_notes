@@ -137,7 +137,8 @@ def create_case_notes_excel_file(data, clientID, filename, pw_str):
     try:
         wb = Workbook()
         ws1 = wb.active
-        ws1.sheet_state = 'visible'
+
+        # add client ref details
         ws1["A1"] = "Client ref"
         ws1["A1"].font = Font(bold=True)
         bd = Side(border_style="thin")
@@ -151,8 +152,6 @@ def create_case_notes_excel_file(data, clientID, filename, pw_str):
         start_row = ws1.max_row + 1
         for row_no, datarow in enumerate(sql_data, start=1):
             for col_no, value in enumerate(datarow, start=1):
-                #print(row)
-                #print(value)
                 ws1.cell(row=start_row+row_no, column=col_no, value=value)
                 # update max col width
                 if col_no == 1 and len(value) > max_col_width:

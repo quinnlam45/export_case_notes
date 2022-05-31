@@ -5,13 +5,12 @@ import pandas as pd
 import numpy as np
 
 # returns DataFrame
-def get_cases(start_range, end_range, srv_str, grp_str, case_typ="Opened"):
+def get_cases(start_range, end_range, srv_str, grp_str, case_type="Opened"):
 
     try:
         cursor = connection.cursor()
 
         params = (start_range, end_range, srv_str, grp_str)
-        case_type = str(case_typ)
         if case_type == "Opened":
            sql = "EXEC spQLGetCasesOpened @StartRange=%s, @EndRange=%s, @strServiceString=%s, @groupString=%s"
         elif case_type == "Closed":
