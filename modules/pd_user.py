@@ -4,58 +4,70 @@ import bcrypt
 def return_pwd_hash(pwd, pwd_salt):
     byte_pwd = pwd.encode('utf-8')
     hash = bcrypt.hashpw(byte_pwd, pwd_salt)
+    hash_str = hash.decode('utf-8')
 
-    return hash
+    return hash_str
 
 def lookup_userID(username):
-    cursor = connection.cursor()
-    cursor.execute('SELECT TOP 1 UserID FROM tblQLPDUser WHERE Username=%s', [username])
-    row = cursor.fetchone()
-    if row:
-        user_check_result = row[0]
-        return user_check_result
-    else:
-        return None
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT TOP 1 UserID FROM tblQLPDUser WHERE Username=%s', [username])
+        row = cursor.fetchone()
+        if row:
+            user_check_result = row[0]
+            return user_check_result
+        else:
+            return None
+
+def retrieve_salt(user_id):
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT PwdSalt FROM tblQLPDUser WHERE UserID=%s', [user_id])
+        user_info = cursor.fetchone()
+        pwd_salt_str = user_info[0]
+        pwd_salt_byte = pwd_salt_str.encode('utf-8')
+
+        return pwd_salt_byte
 
 def add_pd_user(username, pwd):
-    # check if user exists
     try:
+        # check if user exists
         exists_result = lookup_userID(username)
+
         if exists_result == None:
             pwd_salt = bcrypt.gensalt()
-            pwd_hash = return_pwd_hash(pwd, pwd_salt)
+            pwd_hash_str = return_pwd_hash(pwd, pwd_salt)
             pwd_salt_str = pwd_salt.decode('utf-8')
 
-            cursor = connection.cursor()
-            params = (username, pwd_hash, pwd_salt_str)
-            cursor.execute('EXEC spQLAddPDUser @Username=%s, @Pwd=%s, @PwdSalt=%s', params)
+            with connection.cursor() as cursor:
+                params = (username, pwd_hash_str, pwd_salt_str)
+                cursor.execute('EXEC spQLPDUserAdd @username=%s, @pwdHashStr=%s, @pwdSalt=%s', params)
 
-            return 'User added successfully'
+                return 'User added successfully'
         else:
             return 'User exists'
     except Error as err:
         print(err)
         return f'Cannot create {username} login'
-    finally:
-        connection.close()
 
 def verify_pd_user(username, pwd):
     try:
-        user_check_result = lookup_userID(username)
+        user_id = lookup_userID(username)
 
-        if user_check_result == None:
-            return 'User does not exist'
+        if user_id == None:
+            return 'User not found'
         else:
-            cursor = connection.cursor()
-            cursor.execute('SELECT Pwd, PwdSalt UserID WHERE UserID=%s', user_check_result)
-            user_info = namedtuplefetchall(cursor)
-            pwd_salt = user_info[0].PwdSalt
-            pwd_hash = return_pwd_hash(pwd, pwd_salt)
+            pwd_salt_byte = retrieve_salt(user_id)
+            pwd_hash_str = return_pwd_hash(pwd, pwd_salt_byte)
 
-            return 'Login successful'
+            with connection.cursor() as cursor:
+                cursor.execute('exec spQLPDUserValidate %s, %s', (user_id, pwd_hash_str))
+                # returns user id if successful
+                row = cursor.fetchone()
+                print(row)
+                if row:
+                    return 'Login successful'
+                else:
+                    return 'Login unsuccessful'
     
     except Error as err:
         print(err)
-        return f'Cannot create {username} login'
-    finally:
-        connection.close()
+        return 'Login unsuccessful'

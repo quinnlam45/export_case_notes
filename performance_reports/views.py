@@ -18,7 +18,14 @@ from modules.pd_user import *
 # Create your views here.
 def index(request):
     try:
-        return render(request, 'performance_reports/index.html')
+        if request.method == 'POST':
+            username = request.POST['username']
+            pwd = request.POST['pwd']
+            login_msg = verify_pd_user(username, pwd)
+        
+            return render(request, 'performance_reports/index.html', {'message': login_msg})
+        else:
+            return render(request, 'performance_reports/index.html')
     except Error as err:
         return HttpResponse(f"Error: {err}")
 
