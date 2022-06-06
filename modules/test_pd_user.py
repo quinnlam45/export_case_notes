@@ -1,6 +1,10 @@
 import unittest
 import io
 from tempfile import NamedTemporaryFile
+from datetime import datetime, timedelta, timezone
+import calendar
+import time
+import jwt
 from openpyxl import Workbook
 from pd_user import *
 
@@ -12,3 +16,17 @@ class TestPdUser(unittest.TestCase):
         pwd_salt = b'$2b$12$AGqycWsrTYXQg0s.C2riUe'
         hash = create_pwd_hash(pwd, pwd_salt)
         self.assertEqual(expected_hash, hash)
+    
+    def test_create_auth_token(self):
+        #expected_auth_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6InVzZXIxIiwiZXhwIjoxNjU0NTMzMDAwfQ.XWVG90WCJ_IMEIvnwy5jCfj3v4bwOEiuF8DtoNHFTr4'
+        expiry_datetime = datetime.now(timezone.utc) + timedelta(minutes=5)
+        unix_timestamp = calendar.timegm(expiry_datetime.utctimetuple())
+        expected_payload = {
+            'sub': 1,
+            'name': 'user1',
+            'exp': unix_timestamp,
+            }
+        auth_token = create_auth_token(expected_payload['name'], expected_payload['sub'], expected_payload['exp'], test_key='secret-key-test')
+        decoded = jwt.decode(auth_token, 'secret-key-test', algorithms="HS256")
+        print(decoded)
+        self.assertEqual(expected_payload, decoded)

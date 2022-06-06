@@ -1,4 +1,7 @@
+from datetime import datetime, timedelta
 from django.db import Error, connection
+from django.conf import settings
+import jwt
 import bcrypt
 
 def return_pwd_hash(pwd, pwd_salt):
@@ -26,6 +29,28 @@ def retrieve_salt(user_id):
         pwd_salt_byte = pwd_salt_str.encode('utf-8')
 
         return pwd_salt_byte
+
+def create_auth_token(username, user_id, expiration=None, test_key=None):
+    token_expiration_date = datetime.utcnow() + timedelta(minutes=5)
+    payload_data = {
+        'sub': user_id,
+        'name': username,
+        'exp': expiration or token_expiration_date,
+        }
+
+    key = test_key or settings.SECRET_KEY
+
+    try:
+        auth_token = jwt.encode(
+            payload_data,
+            key,
+            algorithm='HS256'
+            )
+        #print(auth_token)
+        return auth_token
+
+    except Error as err:
+        print(err)
 
 def add_pd_user(username, pwd):
     try:
@@ -61,9 +86,9 @@ def verify_pd_user(username, pwd):
             with connection.cursor() as cursor:
                 cursor.execute('exec spQLPDUserValidate %s, %s', (user_id, pwd_hash_str))
                 # returns user id if successful
-                row = cursor.fetchone()
-                print(row)
-                if row:
+                returned_user_id = cursor.fetchone()
+                #print(returned_user_id)
+                if returned_user_id:
                     return 'Login successful'
                 else:
                     return 'Login unsuccessful'
