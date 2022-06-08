@@ -46,7 +46,8 @@ def create_auth_token(username, user_id, expiration=None, test_key=None):
             key,
             algorithm='HS256'
             )
-        #print(auth_token)
+        print(auth_token)
+
         return auth_token
 
     except Error as err:
@@ -78,7 +79,8 @@ def verify_pd_user(username, pwd):
         user_id = lookup_userID(username)
 
         if user_id == None:
-            return 'User not found'
+            print('User not found')
+            return False
         else:
             pwd_salt_byte = retrieve_salt(user_id)
             pwd_hash_str = return_pwd_hash(pwd, pwd_salt_byte)
@@ -87,12 +89,14 @@ def verify_pd_user(username, pwd):
                 cursor.execute('exec spQLPDUserValidate %s, %s', (user_id, pwd_hash_str))
                 # returns user id if successful
                 returned_user_id = cursor.fetchone()
-                #print(returned_user_id)
+
                 if returned_user_id:
-                    return 'Login successful'
+                    print('User found')
+                    return returned_user_id[0]
                 else:
-                    return 'Login unsuccessful'
+                    print(f'Could not validate user: {username}')
+                    return False
     
     except Error as err:
         print(err)
-        return 'Login unsuccessful'
+        return False

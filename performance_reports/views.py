@@ -1,12 +1,10 @@
-import requests
-from http.client import HTTPResponse
+import io
 from django.shortcuts import render
 from django.db import Error
-from django.http import HttpResponse, JsonResponse
-import io
+from django.http import HttpResponse
+import json
 import pandas as pd
 from openpyxl import Workbook
-from openpyxl.writer.excel import save_virtual_workbook
 from openpyxl.styles import Font
 
 from modules.get_data import get_cases
@@ -18,14 +16,7 @@ from modules.pd_user import *
 # Create your views here.
 def index(request):
     try:
-        if request.method == 'POST':
-            username = request.POST['username']
-            pwd = request.POST['pwd']
-            login_msg = verify_pd_user(username, pwd)
-        
-            return render(request, 'performance_reports/index.html', {'message': login_msg})
-        else:
-            return render(request, 'performance_reports/index.html')
+        return render(request, 'performance_reports/index.html')
     except Error as err:
         return HttpResponse(f"Error: {err}")
 
@@ -34,7 +25,7 @@ def export_report(request):
     try:
         data_output = get_cases('1 Jan 2022', '23 mar 2022', '89,16,5,30', '')
         print(data_output)
-        # build excel report here
+
         if request.method == "POST":
 
             excel_data = io.BytesIO()
@@ -65,7 +56,7 @@ def export_notes(request):
             return response
 
         else:
-            return render(request, 'performance_reports/export_notes.html')
+            return render(request, 'performance_reports/export-notes.html')
 
     except Error as err:
         return HttpResponse(f"Error: {err}")
@@ -84,3 +75,21 @@ def add_user(request):
     
     else:
         return render(request, 'performance_reports/add_user.html')
+
+def user_login(request):
+    try:
+        if request.method == 'POST':
+            post_data = json.loads(request.body.decode("utf-8"))
+
+            username = post_data['username']
+            pwd = post_data['pwd']
+            user_id = verify_pd_user(username, pwd)
+
+            if user_id != False:
+                auth_token = create_auth_token(username, user_id)
+                return HttpResponse(auth_token)
+            else:
+                return HttpResponse('Login failed')
+
+    except Error as err:
+        return HttpResponse(f"Error: {err}")

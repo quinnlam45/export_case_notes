@@ -18,7 +18,7 @@
     <div class="container p-3 h-25 my-5 bg-dark text-white">
         <h1>Performance reports</h1>
         <p>Welcome to performance dashboard</p>
-        <form action="/" method="POST">
+        <form name="login-form" id="login-form">
             {% csrf_token %}
             <div class="row p-3">
                 <div class="col-3">
@@ -32,7 +32,7 @@
                     </div>
                 </div>
                 <div class="col d-flex align-items-end">
-                    <button type="submit" class="btn btn-outline-light text-white">Login</button>
+                    <button type="submit" id="submit-button" class="btn btn-outline-light text-white">Login</button>
                 </div>
             </div>
             <div class="row p-3">
@@ -44,65 +44,59 @@
 
     <script>
         "use strict";
-        function checkSpecialChar(event) {
-            var e = document.getElementById('myInput');
-            var chr = e.value
-            if (chr.match(/[^a-zA-Z0-9\s]/g))
-                event.preventDefault();
-                //return false;
-        };
-        let searchBox = document.getElementById('myInput');
-        searchBox.addEventListener('keypress', checkSpecialChar, false)
 
-        let textInput = searchBox.value
+        var loginForm = document.getElementById('login-form');
+        loginForm.addEventListener('submit', handleLogin);
 
-        if (textInput) {
-            searchFunction()
+        function getCSRFCookie() {
+            const csrfCookie = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('csrftoken='))
+                .split('=')[1]
+
+            return csrfCookie
         }
 
-        function searchFunction() {
-            // Declare variables
-            var input, filter, ul, li, a, i, txtValue;
-            input = document.getElementById('myInput');
-            filter = input.value.toUpperCase();
-            ul = document.getElementById("service-list");
-            li = ul.getElementsByTagName('li');
+        function handleSubmit(event) {
+            event.preventDefault();
 
-            // Loop through all list items, and hide those who don't match the search query
-            for (i = 0; i < li.length; i++) {
-                a = li[i].getElementsByTagName("a")[0];
-                txtValue = a.textContent || a.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    li[i].style.display = "";
-                } else {
-                    li[i].style.display = "none";
-                }
-            }
-        }
+            const user = event.currentTarget.elements.username;
+            const pwd = event.currentTarget.elements.pwd;
+            const csrfToken = getCSRFCookie();
+            let formData = { username: user.value, pwd: pwd.value };
 
-        function checkToggle(serviceNo) {
-            var checkbox = document.getElementById("service" + serviceNo + "checkbox");
-            if (checkbox.checked == true) {
-                checkbox.checked = false;
-                } else {
-                    checkbox.checked = true;
-                }            
-        }
-        // convert posted services to JS array
-        const srvFormData = "{{service_ID}}";
-        if (srvFormData) {
-            let matched_no = srvFormData.match(/[0-9]+/g);
-            let service_arr = [];
-            matched_no.forEach(element => {
-                let srvID = parseInt(element);
-                service_arr.push(srvID)
-            });
+            return fetch('/login', {
+                method: 'POST',
+                body: JSON.stringify(formData),
+                headers: { 'X-CSRFToken': csrfToken }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error: ${response.status}`);
+                    }
+                    return response.text().then(data => {
+                        return data;
+                    })
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+                
         }
 
-        function checkRemember(serviceNo) {
-            var checkbox = document.getElementById("service" + serviceNo + "checkbox");
-            checkbox.checked = true;
+        function setJwtToken(token) {
+            sessionStorage.setItem('jwt', token);
         }
+
+        async function handleLogin(event) {
+            let jwtToken;
+            await handleSubmit(event).then(token => {
+                jwtToken = token;
+            })
+            //console.log(jwtToken);
+            setJwtToken(jwtToken);
+        }
+
     </script>
 
 </body>

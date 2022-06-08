@@ -20,7 +20,7 @@
         <h1>Performance reports</h1>
         <p>Export case notes</p>
         <p style="font-style: italic">Please verify case notes are for correct client</p>
-        <form action="/export_notes" method="POST" id="search-form">
+        <form action="/export-notes" method="POST" id="search-form">
             {% csrf_token %}
             <div class="row p-3">
                 <div class="col">
@@ -50,7 +50,7 @@
         var randStr;
 
         function getRandomString() {
-            fetch('/export_notes/get_str')
+            fetch('/export-notes/get-str')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error: ${response.status}`);
@@ -65,14 +65,14 @@
                 .catch(err => console.error(`${err.message}`));
         }
 
-        function loadRandomStr() {
+        function displayRandomStr() {
             statusBox.innerHTML = '<p>' + randStr + '</p>';
             statusBox.style.display = "block";
         }
 
         function updateRandomStr() {
-            // expose existing random str
-            loadRandomStr();
+            // display existing random str
+            displayRandomStr();
             // load new random str for next submit
             getRandomString()
         }
@@ -80,6 +80,7 @@
         window.addEventListener('load', getRandomString);
         submitButton.addEventListener('click', updateRandomStr);
 
+        /*
         function checkSpecialChar(event) {
             var e = document.getElementById('myInput');
             var chr = e.value
@@ -87,6 +88,7 @@
                 event.preventDefault();
                 //return false;
         };
+        */
 
     </script>
 

@@ -18,7 +18,7 @@ class TestPdUser(unittest.TestCase):
         self.assertEqual(expected_hash, hash)
     
     def test_create_auth_token(self):
-        #expected_auth_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6InVzZXIxIiwiZXhwIjoxNjU0NTMzMDAwfQ.XWVG90WCJ_IMEIvnwy5jCfj3v4bwOEiuF8DtoNHFTr4'
+        test_secret_key = 'secret-key-test'
         expiry_datetime = datetime.now(timezone.utc) + timedelta(minutes=5)
         unix_timestamp = calendar.timegm(expiry_datetime.utctimetuple())
         expected_payload = {
@@ -26,7 +26,7 @@ class TestPdUser(unittest.TestCase):
             'name': 'user1',
             'exp': unix_timestamp,
             }
-        auth_token = create_auth_token(expected_payload['name'], expected_payload['sub'], expected_payload['exp'], test_key='secret-key-test')
-        decoded = jwt.decode(auth_token, 'secret-key-test', algorithms="HS256")
+        auth_token = create_auth_token(expected_payload['name'], expected_payload['sub'], expected_payload['exp'], test_key=test_secret_key)
+        decoded = jwt.decode(auth_token, test_secret_key, algorithms="HS256")
         print(decoded)
         self.assertEqual(expected_payload, decoded)
