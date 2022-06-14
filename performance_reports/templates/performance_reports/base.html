@@ -11,18 +11,23 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
-
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'performance_reports/style.css' %}">
 
 </head>
 <body>
     <div class="container p-3 h-25 my-5 bg-dark text-white">
-        <nav>
-            <ul>
-                <li><a href="{% url 'performance_reports:index' %}">Home</a></li>
-                <li><a href="{% url 'performance_reports:export-notes' %}">Export case notes</a></li>
-            </ul>
-        </nav>
-        <div class="row">
+        {% if user.is_authenticated %}
+        <div class="row" id="nav-links">Logged in as: {{user.username}}</div>
+        {% endif %}
+        <div class="row" id="nav-links">
+            <a href="{% url 'performance_reports:index' %}">Home</a> <a href="{% url 'performance_reports:export-notes' %}">Export case notes</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'performance_reports:logout'%}">Log out</a>
+            {% endif %}
+        </div>
+
+        <div class="row" name="header-div-row" id="header-div-row">
             <div class="col">
                 <h1>Performance dashboard</h1>
             </div>
