@@ -1,7 +1,10 @@
 import io
-from django.shortcuts import render
+from django.conf import settings
+from django.shortcuts import render, redirect
 from django.db import Error
 from django.http import HttpResponse
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 import json
 import pandas as pd
 from openpyxl import Workbook
@@ -14,13 +17,15 @@ from modules.export_case_notes import *
 from modules.pd_user import *
 
 # Create your views here.
+@login_required
 def index(request):
     try:
+        #print(request.user.is_authenticated)
         return render(request, 'performance_reports/index.html')
     except Error as err:
         return HttpResponse(f"Error: {err}")
 
-
+@login_required
 def export_report(request):
     try:
         data_output = get_cases('1 Jan 2022', '23 mar 2022', '89,16,5,30', '')
@@ -38,6 +43,7 @@ def export_report(request):
     except Error as err:
         return HttpResponse(f"Error: {err}")
 
+@login_required
 def export_notes(request):
     try:
         if request.method == 'POST':
@@ -66,30 +72,33 @@ def get_random_string(request):
     return HttpResponse(pw_str)
 
 def add_user(request):
+    user_message = {'message': ''}
     if request.method == 'POST':
         username = request.POST['username']
         pwd_str = request.POST['pwd']
         add_user_result = add_pd_user(username, pwd_str)
+        user_message['message'] = add_user_result
 
-        return render(request, 'performance_reports/add_user.html', {'message': add_user_result})
-    
-    else:
-        return render(request, 'performance_reports/add_user.html')
+    return render(request, 'performance_reports/add-user.html', user_message)
 
 def user_login(request):
+    user_message = {'message': ''}
     try:
         if request.method == 'POST':
-            post_data = json.loads(request.body.decode("utf-8"))
-
-            username = post_data['username']
-            pwd = post_data['pwd']
-            user_id = verify_pd_user(username, pwd)
-
-            if user_id != False:
-                auth_token = create_auth_token(username, user_id)
-                return HttpResponse(auth_token)
+            username = request.POST['username']
+            pwd = request.POST['pwd']
+            user = authenticate(request, username=username, password=pwd)
+            print(f'view func:{user}')
+            if user is not None:
+                login(request, user)
+                return redirect('/')
             else:
-                return HttpResponse('Login failed')
+                user_message['message'] = 'Invalid login'
+        return render(request, 'performance_reports/login.html', user_message)
 
     except Error as err:
         return HttpResponse(f"Error: {err}")
+
+def user_logout(request):
+    logout(request)
+    return redirect('/')

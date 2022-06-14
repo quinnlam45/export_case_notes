@@ -16,30 +16,19 @@
 </head>
 <body>
     <div class="container p-3 h-25 my-5 bg-dark text-white">
-        <h1>Performance reports</h1>
-        <p>Welcome to performance dashboard</p>
-        <form name="login-form" id="login-form">
-            {% csrf_token %}
-            <div class="row p-3">
-                <div class="col-3">
-                    <div class="row p-1">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" />
-                    </div>
-                    <div class="row p-1">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="pwd" name="pwd" />
-                    </div>
-                </div>
-                <div class="col d-flex align-items-end">
-                    <button type="submit" id="submit-button" class="btn btn-outline-light text-white">Login</button>
-                </div>
+        <div class="row">
+            <div class="col">
+                <h1>Performance reports</h1>
+                <p>Welcome to performance dashboard</p>
             </div>
-            <div class="row p-3">
-                {{message}}
+            <div class="col">
+                <a href="/logout">Log out</a>
             </div>
-
-        </form>
+        </div>
+        <div>
+            <a href="{% url 'performance_reports:export-notes' %}" class="btn btn-secondary btn-lg">Export client case notes</a>
+            <a href="#" class="btn btn-secondary btn-lg">Export stats report</a>
+        </div>
     </div>
 
     <script>

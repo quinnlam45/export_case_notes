@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from django.db import Error, connection
 from django.conf import settings
+from django.contrib.auth.backends import BaseBackend
+from django.contrib.auth.models import User
 import jwt
 import bcrypt
 
@@ -100,3 +102,23 @@ def verify_pd_user(username, pwd):
     except Error as err:
         print(err)
         return False
+
+class CustomBackend(BaseBackend):
+    def authenticate(self, request, username=None, password=None):
+        verify_user_result = verify_pd_user(username, password)
+
+        if verify_user_result:
+            try:
+                user = User.objects.using('users').get(username=username)
+                print(f'retrieved user: {user}')
+            except User.DoesNotExist:
+                user = User(username=username)
+                user.save(using='users')
+            return user
+        return None
+
+    def get_user(self, user_id):
+        try:
+            return User.objects.using('users').get(pk=user_id)
+        except User.DoesNotExist:
+            return None
