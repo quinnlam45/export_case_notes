@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.db import Error
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 import json
 import pandas as pd
 from openpyxl import Workbook
@@ -39,7 +39,7 @@ def export_report(request):
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
                 'Content_Disposition': 'attachment; filename="Test_file.xlsx"',})
             return response
-        return render(request, 'performance_reports/index.html')
+        return render(request, 'performance_reports/reports.html')
     except Error as err:
         return HttpResponse(f"Error: {err}")
 
@@ -67,17 +67,25 @@ def export_notes(request):
     except Error as err:
         return HttpResponse(f"Error: {err}")
 
+@login_required
 def get_random_string(request):
     pw_str = create_random_pw_string()
     return HttpResponse(pw_str)
 
+@login_required
 def add_user(request):
     user_message = {'message': ''}
     if request.method == 'POST':
         username = request.POST['username']
         pwd_str = request.POST['pwd']
-        add_user_result = add_pd_user(username, pwd_str)
-        user_message['message'] = add_user_result
+        pwd_confirm_str = request.POST['pwd-confirm']
+
+        if pwd_str == pwd_confirm_str:
+            add_user_result = add_pd_user(username, pwd_str)
+            user_message['message'] = add_user_result
+        else:
+            user_message['message'] = 'Passwords did not match'
+            user_message['username'] = username
 
     return render(request, 'performance_reports/add-user.html', user_message)
 
@@ -88,9 +96,10 @@ def user_login(request):
             username = request.POST['username']
             pwd = request.POST['pwd']
             user = authenticate(request, username=username, password=pwd)
-            print(f'view func:{user}')
+
             if user is not None:
                 login(request, user)
+                record_login_time(username)
                 return redirect('/')
             else:
                 user_message['message'] = 'Invalid login'
@@ -102,3 +111,33 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('/')
+
+def admin_check(user):
+    username = user.username
+    admin_check = check_user_is_admin(username)
+    print(username)
+    print(admin_check)
+    return admin_check
+
+@user_passes_test(admin_check, login_url='/admin-only')
+def user_admin(request):
+    try:
+        user_dict = get_all_users()
+        return render(request, 'performance_reports/user-admin.html', user_dict)
+    except Error as err:
+        return HttpResponse(f"Error: {err}")
+
+@user_passes_test(admin_check, login_url='/admin-only')
+def user_admin_delete_user(request, username):
+    try:
+        delete_user(username)
+        return redirect('performance_reports:user-admin')
+    except Error as err:
+        return HttpResponse(f"Error: {err}")
+
+@login_required
+def admin_only(request):
+    try:
+        return render(request, 'performance_reports/admin-only.html')
+    except Error as err:
+        return HttpResponse(f"Error: {err}")

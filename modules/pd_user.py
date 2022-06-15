@@ -32,6 +32,11 @@ def retrieve_salt(user_id):
 
         return pwd_salt_byte
 
+def record_login_time(username):
+    time_now = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+    with connection.cursor() as cursor:
+        cursor.execute('UPDATE tblQLPDUser SET LastLogin=%s WHERE Username=%s', [time_now, username])
+
 def create_auth_token(username, user_id, expiration=None, test_key=None):
     token_expiration_date = datetime.utcnow() + timedelta(minutes=5)
     payload_data = {
@@ -109,11 +114,12 @@ class CustomBackend(BaseBackend):
 
         if verify_user_result:
             try:
-                user = User.objects.using('users').get(username=username)
+                user = User.objects.get(username=username)
                 print(f'retrieved user: {user}')
             except User.DoesNotExist:
+                # add user to django user db
                 user = User(username=username)
-                user.save(using='users')
+                user.save()
             return user
         return None
 
@@ -122,3 +128,58 @@ class CustomBackend(BaseBackend):
             return User.objects.using('users').get(pk=user_id)
         except User.DoesNotExist:
             return None
+
+def get_all_users():
+    user_dict = {'user_rows':[]}
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT UserID, Username, UserType, LastLogin FROM tblQLPDUser')
+            row = cursor.fetchone()
+            while row:
+                user_dict['user_rows'].append(row)
+                row = cursor.fetchone()
+        print(user_dict)
+        return user_dict
+    except:
+        user_dict['user_message'] = 'Error retrieving users'
+        return user_dict
+
+def delete_django_user(username):
+    try:
+        user = User.objects.get(username=username)
+        user.delete()
+        return 'Deleted django user'
+    except User.DoesNotExist:
+        return 'Django user does not exist'
+
+def delete_user(username):
+    user_id = lookup_userID(username)
+    if user_id != None:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM tblQLPDUser WHERE UserID=%s',[user_id])
+            result = delete_django_user(username)
+            return 'User deleted'
+        except:
+            return 'Error deleting user'
+    else:
+        return 'User not found'
+
+def check_user_is_admin(username):
+    user_id = lookup_userID(username)
+    if user_id != None:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT UserType FROM tblQLPDUser WHERE UserID=%s',[user_id])
+                returned_user_type = cursor.fetchone()
+                print(returned_user_type)
+                if returned_user_type[0] == 1:
+                    return True
+                else:
+                    return False
+        except:
+            print('Admin check error')
+            return False
+    else:
+        print('User not found')
+        return False

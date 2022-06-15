@@ -9,3 +9,4 @@ migrations/
 *.xlsx
 test.xlsx
 Activate_venv.ps1
+debug.py

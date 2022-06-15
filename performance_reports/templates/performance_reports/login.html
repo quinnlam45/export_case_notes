@@ -17,10 +17,11 @@
 <body>
     <div class="container p-3 h-25 my-5 bg-dark text-white">
         <h1>Performance reports</h1>
-        <p>Welcome to performance dashboard</p>
+        <p>Please log in below</p>
         <form action="/login" method="POST" name="login-form" id="login-form">
             {% csrf_token %}
             <div class="row p-3">
+                
                 <div class="col-3">
                     <div class="row p-1">
                         <label for="username" class="form-label">Username</label>
@@ -36,7 +37,7 @@
                 </div>
             </div>
             <div class="row p-3">
-                {{user_message}}
+                {{message}}
             </div>
 
         </form>

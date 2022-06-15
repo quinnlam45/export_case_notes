@@ -1,0 +1,81 @@
+﻿{% extends "performance_reports/base.html" %}
+{% block content %}
+
+<div class="row">
+    <div class="col">
+        <p>User admin</p>
+    </div>
+    <div class="col" style="text-align:right;">
+        <a href="{% url 'performance_reports:add-user' %}" class="bi bi-person-plus-fill btn btn-secondary">Add new user</a>
+    </div>
+</div>
+
+    <div class="row">
+        <p>{{user_message}}</p>
+    </div>
+
+    <div class="row bg-light">
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>User type</th>
+                    <th>Last login</th>
+                    <th>Admin</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in user_rows %}
+                <tr>
+                    <td>{{user.1}}</td>
+                    <td>{{user.2}}</td>
+                    <td>{{user.3}}</td>
+                    <td>
+                        <button class="bi bi-trash-fill btn btn-outline-secondary btn-sm" id="delete-btn-userID{{user.0}}" value="{{user.0}}">Delete</button> <br>
+                        <div class="delete-confirm-box" style="display:none;" id="delete-status-userID{{user.0}}">
+                            Are you sure you want to delete user: <b>{{user.1}}</b>? <br>
+                            <a class="bi bi-check-lg btn btn-light btn-sm" href="/user-admin/delete-user/{{user.1}}">Yes</a>
+                            <button class="bi bi-x-lg btn btn-light btn-sm" id="delete-cancel-userID{{user.0}}" value="{{user.0}}">No</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+
+    <script>
+        "use strict";
+        let delBtns = document.querySelectorAll('button.bi-trash-fill');
+        let cancelDeleteBtns = document.querySelectorAll('button.bi-x-lg');
+
+        delBtns.forEach(item => {
+            item.addEventListener('click', function () { handleDelete(item.value); });
+        })
+
+        cancelDeleteBtns.forEach(item => {
+            item.addEventListener('click', function () { cancelDelete(item.value); });
+        })
+
+        function getDeleteStatusBox(val) {
+            let deleteConfirmBoxName = `#delete-status-userID${val}`;
+            let deleteConfirmBox = document.querySelector(deleteConfirmBoxName);
+            return deleteConfirmBox
+        }
+
+        function handleDelete(val) {
+            let deleteConfirmBox = getDeleteStatusBox(val);
+            deleteConfirmBox.style.display = 'inline-block';
+        }
+
+        function cancelDelete(val) {
+            let deleteConfirmBox = getDeleteStatusBox(val);
+            deleteConfirmBox.style.display = 'none';
+        }
+
+    </script>
+
+    {% endblock content %}

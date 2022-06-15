@@ -1,0 +1,9 @@
+{% extends "performance_reports/base.html" %}
+{% block content %}
+
+<div>
+    <p>Restricted - administrators only</p>
+    <a href="{% url 'performance_reports:index' %}" class="btn btn-secondary">Return to homepage</a>
+</div>
+
+{% endblock content %}

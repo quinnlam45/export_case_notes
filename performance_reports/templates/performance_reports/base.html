@@ -16,9 +16,9 @@
 
 </head>
 <body>
-    <div class="container p-3 h-25 my-5 bg-dark text-white">
+    <div class="container p-3 h-100 my-5 bg-dark text-white">
         {% if user.is_authenticated %}
-        <div class="row" id="nav-links">Logged in as: {{user.username}}</div>
+        <div class="row" id="nav-links">Logged in as: <b>{{user.username}}</b> </div>
         {% endif %}
         <div class="row" id="nav-links">
             <a href="{% url 'performance_reports:index' %}">Home</a> <a href="{% url 'performance_reports:export-notes' %}">Export case notes</a>
@@ -28,9 +28,7 @@
         </div>
 
         <div class="row" name="header-div-row" id="header-div-row">
-            <div class="col">
                 <h1>Performance dashboard</h1>
-            </div>
         </div>
 
         {% block content %}{% endblock content %}
