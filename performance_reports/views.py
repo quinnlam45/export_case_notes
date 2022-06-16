@@ -1,5 +1,7 @@
 import io
 from django.conf import settings
+from django.urls import reverse
+from urllib.parse import urlencode
 from django.shortcuts import render, redirect
 from django.db import Error
 from django.http import HttpResponse
@@ -89,6 +91,12 @@ def add_user(request):
 
     return render(request, 'performance_reports/add-user.html', user_message)
 
+def admin_check(user):
+    # check if user is admin
+    username = user.username
+    admin_check = check_user_is_admin(username)
+    return admin_check
+
 def user_login(request):
     user_message = {'message': ''}
     try:
@@ -100,6 +108,9 @@ def user_login(request):
             if user is not None:
                 login(request, user)
                 record_login_time(username)
+                admin_check_result = admin_check(user)
+                if admin_check_result:
+                    request.session['user_type'] = 1
                 return redirect('/')
             else:
                 user_message['message'] = 'Invalid login'
@@ -112,12 +123,7 @@ def user_logout(request):
     logout(request)
     return redirect('/')
 
-def admin_check(user):
-    username = user.username
-    admin_check = check_user_is_admin(username)
-    print(username)
-    print(admin_check)
-    return admin_check
+
 
 @user_passes_test(admin_check, login_url='/admin-only')
 def user_admin(request):
@@ -135,9 +141,60 @@ def user_admin_delete_user(request, username):
     except Error as err:
         return HttpResponse(f"Error: {err}")
 
+@user_passes_test(admin_check, login_url='/admin-only')
+def user_admin_update_user_pwd(request):
+    try:
+        if request.method == 'POST':
+            username = request.POST['username']
+            user_id = request.POST['user-id']
+            pwd_str = request.POST['pwd']
+            pwd_confirm_str = request.POST['pwd-confirm']
+
+            if pwd_str == pwd_confirm_str:
+                update_result = update_user_pwd(username, pwd_str)
+                print(update_result)
+                return redirect('performance_reports:user-admin')
+            else:
+                base_url = reverse('performance_reports:user-admin')
+                query_str = urlencode({'user-id': user_id})
+                url = f'{base_url}?{query_str}'
+                return redirect(url)
+
+    except Error as err:
+        return HttpResponse(f"Error: {err}")
+
 @login_required
 def admin_only(request):
     try:
         return render(request, 'performance_reports/admin-only.html')
+    except Error as err:
+        return HttpResponse(f"Error: {err}")
+
+@login_required
+def user_update_pwd(request):
+    user_message = {'message': ''}
+    try:
+        if request.method == 'POST':
+            username = request.POST['username']
+            current_pwd_str = request.POST['pwd-current']
+            pwd_str = request.POST['pwd']
+            pwd_confirm_str = request.POST['pwd-confirm']
+            user = authenticate(request, username=username, password=current_pwd_str)
+
+            if user and username == user.username:
+                if pwd_str == pwd_confirm_str:
+                    update_result = update_user_pwd(username, pwd_str)
+                    # log out then redirect to login
+                    logout(request)
+                    base_url = reverse('performance_reports:login')
+                    query_str = urlencode({'user_updated': 'True'})
+                    url = f'{base_url}?{query_str}'
+                    return redirect(url)
+                else:
+                    user_message['message'] = 'Passwords do not match'
+            else:
+                user_message['message'] = 'Could not verify user'
+        return render(request, 'performance_reports/change-pwd.html', user_message)
+
     except Error as err:
         return HttpResponse(f"Error: {err}")

@@ -93,7 +93,7 @@ def verify_pd_user(username, pwd):
             pwd_hash_str = return_pwd_hash(pwd, pwd_salt_byte)
 
             with connection.cursor() as cursor:
-                cursor.execute('exec spQLPDUserValidate %s, %s', (user_id, pwd_hash_str))
+                cursor.execute('EXEC spQLPDUserValidate %s, %s', (user_id, pwd_hash_str))
                 # returns user id if successful
                 returned_user_id = cursor.fetchone()
 
@@ -133,12 +133,11 @@ def get_all_users():
     user_dict = {'user_rows':[]}
     try:
         with connection.cursor() as cursor:
-            cursor.execute('SELECT UserID, Username, UserType, LastLogin FROM tblQLPDUser')
+            cursor.execute("SELECT UserID, Username, (CASE WHEN UserType = 1 THEN 'Admin' ELSE 'User' END) Usertype, LastLogin FROM tblQLPDUser")
             row = cursor.fetchone()
             while row:
                 user_dict['user_rows'].append(row)
                 row = cursor.fetchone()
-        print(user_dict)
         return user_dict
     except:
         user_dict['user_message'] = 'Error retrieving users'
@@ -159,7 +158,7 @@ def delete_user(username):
             with connection.cursor() as cursor:
                 cursor.execute('DELETE FROM tblQLPDUser WHERE UserID=%s',[user_id])
             result = delete_django_user(username)
-            return 'User deleted'
+            return f'User {username} deleted'
         except:
             return 'Error deleting user'
     else:
@@ -172,7 +171,7 @@ def check_user_is_admin(username):
             with connection.cursor() as cursor:
                 cursor.execute('SELECT UserType FROM tblQLPDUser WHERE UserID=%s',[user_id])
                 returned_user_type = cursor.fetchone()
-                print(returned_user_type)
+
                 if returned_user_type[0] == 1:
                     return True
                 else:
@@ -183,3 +182,24 @@ def check_user_is_admin(username):
     else:
         print('User not found')
         return False
+
+def update_user_pwd(username, pwd):
+    try:
+        # check if user exists
+        user_id = lookup_userID(username)
+
+        if user_id != None:
+            new_pwd_salt = bcrypt.gensalt()
+            pwd_hash_str = return_pwd_hash(pwd, new_pwd_salt)
+            pwd_salt_str = new_pwd_salt.decode('utf-8')
+
+            with connection.cursor() as cursor:
+                params = (pwd_hash_str, pwd_salt_str, user_id)
+                cursor.execute('UPDATE tblQLPDUser SET Pwd=%s, PwdSalt=%s WHERE UserID=%s', params)
+
+                return 'User updated successfully'
+        else:
+            return 'User not found'
+    except Error as err:
+        print(err)
+        return f'Cannot update user {username}'

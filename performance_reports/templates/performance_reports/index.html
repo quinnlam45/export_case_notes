@@ -10,65 +10,9 @@
 <div>
     <a href="{% url 'performance_reports:export-notes' %}" class="btn btn-secondary btn-lg"><i class="bi bi-person-rolodex"></i> Export client case notes</a>
     <a href="#" class="btn btn-secondary btn-lg"><i class="bi bi-clipboard-data"></i> Export stats report</a>
+    {% if request.session.user_type == 1 %}
+    <a href="{% url 'performance_reports:user-admin' %}" class="btn btn-secondary btn-lg"><i class="bi bi-people-fill"></i> Manage performance dashboard users</a>
+    {% endif %}
 </div>
-<!--
 
-
-<script>
-    "use strict";
-
-    var loginForm = document.getElementById('login-form');
-    loginForm.addEventListener('submit', handleLogin);
-
-    function getCSRFCookie() {
-        const csrfCookie = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('csrftoken='))
-            .split('=')[1]
-
-        return csrfCookie
-    }
-
-    function handleSubmit(event) {
-        event.preventDefault();
-
-        const user = event.currentTarget.elements.username;
-        const pwd = event.currentTarget.elements.pwd;
-        const csrfToken = getCSRFCookie();
-        let formData = { username: user.value, pwd: pwd.value };
-
-        return fetch('/login', {
-            method: 'POST',
-            body: JSON.stringify(formData),
-            headers: { 'X-CSRFToken': csrfToken }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error: ${response.status}`);
-                }
-                return response.text().then(data => {
-                    return data;
-                })
-            })
-            .catch(err => {
-                console.log(err)
-            })
-
-    }
-
-    function setJwtToken(token) {
-        sessionStorage.setItem('jwt', token);
-    }
-
-    async function handleLogin(event) {
-        let jwtToken;
-        await handleSubmit(event).then(token => {
-            jwtToken = token;
-        })
-        //console.log(jwtToken);
-        setJwtToken(jwtToken);
-    }
-
-</script>
-    -->
 {% endblock content %}

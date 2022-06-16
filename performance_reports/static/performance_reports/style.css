@@ -19,9 +19,12 @@ a:hover {
     color: lightgray;
 }
 
-.delete-confirm-box {
+button {
+    padding: 2px;
+}
+
+.delete-confirm-box, .change-pwd-box {
     font-size: small;
-    background-color: #ffc266;
     padding: 3px;
-    text-align: left;
+    margin: 5px;
 }

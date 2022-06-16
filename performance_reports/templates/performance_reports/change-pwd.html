@@ -1,0 +1,35 @@
+{% extends "performance_reports/base.html" %}
+{% block content %}
+<p>Change your password</p>
+<form action="/change-pwd" method="POST">
+    {% csrf_token %}
+    <div class="row p-3">
+        <div class="col-3">
+
+                <input type="hidden" class="form-control" id="username" name="username" value="{{user.username}}" />
+
+            <div class="row p-1">
+                <label for="password" class="form-label">Current password</label>
+                <input type="password" class="form-control" id="pwd-current" name="pwd-current" />
+            </div>
+            <div class="row p-1">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="pwd" name="pwd" />
+            </div>
+            <div class="row p-1">
+                <label for="password" class="form-label">Confirm password</label>
+                <input type="password" class="form-control" id="pwd-confirm" name="pwd-confirm" />
+            </div>
+
+        </div>
+        <div class="col d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-light text-white">Change password</button>
+        </div>
+    </div>
+    <div class="row p-3">
+        <p style="font-style: italic; color: orange;">{{message}}</p>
+    </div>
+
+</form>
+
+{% endblock content %}

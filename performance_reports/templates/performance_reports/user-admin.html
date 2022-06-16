@@ -3,7 +3,7 @@
 
 <div class="row">
     <div class="col">
-        <p>User admin</p>
+        <p>Manage performance dashboard users</p>
     </div>
     <div class="col" style="text-align:right;">
         <a href="{% url 'performance_reports:add-user' %}" class="bi bi-person-plus-fill btn btn-secondary">Add new user</a>
@@ -32,11 +32,41 @@
                     <td>{{user.2}}</td>
                     <td>{{user.3}}</td>
                     <td>
-                        <button class="bi bi-trash-fill btn btn-outline-secondary btn-sm" id="delete-btn-userID{{user.0}}" value="{{user.0}}">Delete</button> <br>
-                        <div class="delete-confirm-box" style="display:none;" id="delete-status-userID{{user.0}}">
+                        <button class="bi bi-trash-fill btn btn-outline-secondary btn-sm" id="delete-btn-userID{{user.0}}" value="{{user.0}}">Delete</button>
+                        <button class="bi bi-pencil-square btn btn-outline-secondary btn-sm" id="change-pwd-btn-userID{{user.0}}" value="{{user.0}}">Change password</button>
+
+                        <div class="alert alert-warning delete-confirm-box" style="display:none;" id="delete-status-userID{{user.0}}">
                             Are you sure you want to delete user: <b>{{user.1}}</b>? <br>
                             <a class="bi bi-check-lg btn btn-light btn-sm" href="/user-admin/delete-user/{{user.1}}">Yes</a>
                             <button class="bi bi-x-lg btn btn-light btn-sm" id="delete-cancel-userID{{user.0}}" value="{{user.0}}">No</button>
+                        </div>
+
+                        <div class="alert alert-dark change-pwd-box" style="display:none;" role="alert" id="change-pwd-box-userID{{user.0}}">
+                            <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
+                            Change password for user: <b>{{user.1}}</b>
+                            <form action="user-admin/update-user" method="POST" style="padding:9px;">
+                                {% csrf_token %}
+                                <div>
+                                    <input type="hidden" class="form-control-sm" id="userID{{user.0}}" name="user-id" value="{{user.0}}" />
+                                    <input type="hidden" class="form-control-sm" id="username{{user.0}}" name="username" value="{{user.1}}" />
+
+                                    <div class="row mb-2">
+                                        <label for="password" class="col-sm-3 form-label">New password</label>
+                                        <div class="col-sm-9">
+                                            <input type="password" class="form-control-sm" id="pwd{{user.0}}" name="pwd" />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <label for="password" class="col-sm-3 form-label">Confirm password</label>
+                                        <div class="col-sm-9">
+                                            <input type="password" class="form-control-sm" id="pwd-confirm{{user.0}}" name="pwd-confirm" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button type="submit" class="btn btn-dark btn-sm text-white">Change password</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </td>
                 </tr>
@@ -50,30 +80,50 @@
     <script>
         "use strict";
         let delBtns = document.querySelectorAll('button.bi-trash-fill');
-        let cancelDeleteBtns = document.querySelectorAll('button.bi-x-lg');
+        let hideDeleteBtns = document.querySelectorAll('button.bi-x-lg');
+        let changePwdBtns = document.querySelectorAll('button.bi-pencil-square');
 
         delBtns.forEach(item => {
             item.addEventListener('click', function () { handleDelete(item.value); });
         })
 
-        cancelDeleteBtns.forEach(item => {
-            item.addEventListener('click', function () { cancelDelete(item.value); });
+        hideDeleteBtns.forEach(item => {
+            item.addEventListener('click', function () { hideDeleteConfirm(item.value); });
         })
 
-        function getDeleteStatusBox(val) {
-            let deleteConfirmBoxName = `#delete-status-userID${val}`;
-            let deleteConfirmBox = document.querySelector(deleteConfirmBoxName);
-            return deleteConfirmBox
+        changePwdBtns.forEach(item => {
+            item.addEventListener('click', function () { showPwdChangeBox(item.value); });
+        })
+
+        function getStatusBoxByUserId(statusBoxId, userId) {
+            let statusBoxName = `${statusBoxId}${userId}`;
+            let statusBox = document.querySelector(statusBoxName);
+            return statusBox
         }
 
-        function handleDelete(val) {
-            let deleteConfirmBox = getDeleteStatusBox(val);
+        function handleDelete(userId) {
+            let deleteConfirmBox = getStatusBoxByUserId('#delete-status-userID', userId);
             deleteConfirmBox.style.display = 'inline-block';
         }
 
-        function cancelDelete(val) {
-            let deleteConfirmBox = getDeleteStatusBox(val);
+        function hideDeleteConfirm(userId) {
+            let deleteConfirmBox = getStatusBoxByUserId('#delete-status-userID', userId);
             deleteConfirmBox.style.display = 'none';
+        }
+
+        function showPwdChangeBox(userId) {
+            let pwdChangeBox = getStatusBoxByUserId('#change-pwd-box-userID', userId);
+            pwdChangeBox.style.display = 'inline-block';
+        }
+
+        const parsedURL = new URL(window.location.href);
+        let userId = parsedURL.searchParams.get("user-id");
+        if (userId) {
+            let pwdChangeBox = getStatusBoxByUserId('#change-pwd-box-userID', userId);
+            if (pwdChangeBox) {
+                pwdChangeBox.innerHTML = pwdChangeBox.innerHTML + '<div class="alert alert-danger" role="alert">Passwords did not match</div>';
+                showPwdChangeBox(userId);
+            }
         }
 
     </script>
