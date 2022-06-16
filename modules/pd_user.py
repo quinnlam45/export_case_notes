@@ -37,29 +37,6 @@ def record_login_time(username):
     with connection.cursor() as cursor:
         cursor.execute('UPDATE tblQLPDUser SET LastLogin=%s WHERE Username=%s', [time_now, username])
 
-def create_auth_token(username, user_id, expiration=None, test_key=None):
-    token_expiration_date = datetime.utcnow() + timedelta(minutes=5)
-    payload_data = {
-        'sub': user_id,
-        'name': username,
-        'exp': expiration or token_expiration_date,
-        }
-
-    key = test_key or settings.SECRET_KEY
-
-    try:
-        auth_token = jwt.encode(
-            payload_data,
-            key,
-            algorithm='HS256'
-            )
-        print(auth_token)
-
-        return auth_token
-
-    except Error as err:
-        print(err)
-
 def add_pd_user(username, pwd):
     try:
         # check if user exists

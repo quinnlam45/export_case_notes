@@ -203,7 +203,7 @@ def create_case_notes_excel_file(data, clientID, filename, pw_str):
         return excel_file_bytes
     
     except:
-        raise Exception('File not sucessfully created')
+        raise Exception('Unable to create file')
     finally:
         remove_file_if_exists(filename)
 

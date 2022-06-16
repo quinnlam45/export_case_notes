@@ -1,11 +1,12 @@
 import unittest
+from django.conf import settings
 import pandas as pd
 from openpyxl import Workbook
 
 from excel_module import *
 
 class TestExcelModule(unittest.TestCase):
-    temp_dir = r'C:\Users\quinn.lam\Documents\Coding practice\Sandbox\temp_folder'
+    temp_dir = settings.TEMP_DIR
     filename = temp_dir + r'\Test.xlsx'
     test_data = [['Heading 1'], ['Case note text']]
 
