@@ -3,7 +3,6 @@ from django.db import Error, connection
 from django.conf import settings
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth.models import User
-import jwt
 import bcrypt
 
 def return_pwd_hash(pwd, pwd_salt):

@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-TEMP_DIR = r'' # add temp folder location
+TEMP_DIR = r''
 
 # Application definition
 
@@ -81,11 +81,11 @@ AUTHENTICATION_BACKENDS = [
 DATABASES = {
     'default': {
         'ENGINE': 'sql_server.pyodbc',
-        'NAME': '', # db name
-        'HOST': '', # server name
+        'NAME': '',
+        'HOST': '',
         'OPTIONS' : {
             'driver': 'ODBC Driver 17 for SQL Server',
-             'Trusted_Connection': 'yes',
+            'Trusted_Connection': 'yes',
         },
     },
      'users': {

@@ -5,7 +5,6 @@ import random
 import re
 from tempfile import NamedTemporaryFile
 
-import xlwings as xw
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo, TableColumn
 from openpyxl.styles import Font, Alignment, Border, Side, NamedStyle, PatternFill, Color, numbers
