@@ -10,3 +10,4 @@ migrations/
 test.xlsx
 Activate_venv.ps1
 debug.py
+sql_scripts/
