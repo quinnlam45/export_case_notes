@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from django.db import Error, connection
 from django.conf import settings
 from django.contrib.auth.backends import BaseBackend

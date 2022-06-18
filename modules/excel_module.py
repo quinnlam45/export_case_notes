@@ -3,7 +3,6 @@ import os
 import string
 import random
 import re
-from tempfile import NamedTemporaryFile
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo, TableColumn
